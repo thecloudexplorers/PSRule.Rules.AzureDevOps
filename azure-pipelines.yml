@@ -6,8 +6,7 @@
 trigger:
   - main
 
-pool:
-  vmImage: windows-latest
+pool: deafult
 
 steps:
   - task: NuGetAuthenticate@1
