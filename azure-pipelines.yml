@@ -17,7 +17,7 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
+        # Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
         Import-Module Microsoft.PowerShell.PSResourceGet 
         
         Publish-PSResource -Path $packagetPath -Repository $(publishFeed) -ApiKey 123      
