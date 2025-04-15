@@ -14,7 +14,12 @@ steps:
       feedUrl: "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3/index.json"
 
   - powershell: |
-      Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery
-      Import-Module Microsoft.PowerShell.PSResourceGet
+
+
+      Install-Module Microsoft.PowerShell.SecretManagement -Force
+      Install-Module Microsoft.PowerShell.SecretStore -Force
+
+      Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
+      Import-Module Microsoft.PowerShell.PSResourceGet -Force
 
       Publish-PSResource -Path $packagetPath -Repository $(publishFeed) -ApiKey 123
