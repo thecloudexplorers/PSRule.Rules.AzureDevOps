@@ -10,10 +10,10 @@ pool:
   vmImage: windows-latest
 
 steps:
-
-  - task: NuGetCommand@2
+  - task: NuGetAuthenticate@1
     inputs:
-      command: 'push'
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/src/PSRule.Rules.AzureDevOps'
-      nuGetFeedType: 'internal'
-      publishVstsFeed: $(publishFeed)
+      feedUrl: 'https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3/index.json'
+
+
+  - powershell:
+      Publish-PSResource -Path $packagetPath -Repository $(publishFeed) -Credential $credentials -ApiKey 123
