@@ -4,7 +4,7 @@
 # https://aka.ms/yaml
 
 trigger:
-- main
+  - main
 
 pool:
   vmImage: windows-latest
@@ -12,11 +12,10 @@ pool:
 steps:
   - task: NuGetAuthenticate@1
     inputs:
-      feedUrl: 'https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3/index.json'
+      feedUrl: "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3/index.json"
 
-
-  - powershell:
-      Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery
+  - powershell: |
+      Install-Module Microsoft.PowerShell.PSResourceGet
       Import-Module Microsoft.PowerShell.PSResourceGet
-      
+
       Publish-PSResource -Path $packagetPath -Repository $(publishFeed) -Credential $credentials -ApiKey 123
