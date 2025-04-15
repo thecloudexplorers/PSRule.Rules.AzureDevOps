@@ -17,12 +17,7 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        Install-Module Microsoft.PowerShell.SecretManagement -Force
-        Install-Module Microsoft.PowerShell.SecretStore -Force
-
-        Import-Module Microsoft.PowerShell.Security
-
         Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
-        Import-Module Microsoft.PowerShell.PSResourceGet -Force
-
-        Publish-PSResource -Path $packagetPath -Repository $(publishFeed) -ApiKey 123
+        Import-Module Microsoft.PowerShell.PSResourceGet 
+        
+        Publish-PSResource -Path $packagetPath -Repository $(publishFeed) -ApiKey 123      
