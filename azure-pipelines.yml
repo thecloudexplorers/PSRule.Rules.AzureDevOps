@@ -17,4 +17,4 @@ steps:
       Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery
       Import-Module Microsoft.PowerShell.PSResourceGet
 
-      Publish-PSResource -Path $packagetPath -Repository $(publishFeed) -Credential $credentials -ApiKey 123
+      Publish-PSResource -Path $packagetPath -Repository $(publishFeed) -ApiKey 123
