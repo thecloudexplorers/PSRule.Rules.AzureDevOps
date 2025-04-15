@@ -6,7 +6,7 @@
 trigger:
   - main
 
-pool: deafult
+pool: default
 
 steps:
   - task: NuGetAuthenticate@1
