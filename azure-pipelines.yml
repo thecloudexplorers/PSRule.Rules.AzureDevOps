@@ -20,6 +20,11 @@ steps:
   #     script: |
 
   - powershell: |
+      $patToken = $(patToken) | ConvertTo-SecureString -AsPlainText -Force
+      $myCredentialsObject = New-Object System.Management.Automation.PSCredential($(patUser), $patToken)
+
+      Register-PSRepository -Name "PSGalleryUpstream" -SourceLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2" -PublishLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2" -InstallationPolicy Trusted -Credential $myCredentialsObject
+
       Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
       # Import-Module Microsoft.PowerShell.Security
       Import-Module Microsoft.PowerShell.PSResourceGet 
