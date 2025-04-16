@@ -24,4 +24,4 @@ steps:
         
         Get-ChildItem $(Build.SourcesDirectory)
 
-        Publish-PSResource -Path $(packagetPath) -Repository $(publishFeed) -ApiKey 123      src\PSRule.Rules.AzureDevOps
+        Publish-PSResource -Path $(packagePath) -Repository $(publishFeed) -ApiKey 123      src\PSRule.Rules.AzureDevOps
