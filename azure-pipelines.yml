@@ -14,17 +14,19 @@ steps:
   #   inputs:
   #     feedUrl: "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3/index.json"
 
-  - task: PowerShell@2
-    inputs:
-      targetType: "inline"
-      script: |
-        Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
-        # Import-Module Microsoft.PowerShell.Security
-        Import-Module Microsoft.PowerShell.PSResourceGet 
+  # - task: PowerShell@2
+  #   inputs:
+  #     targetType: "inline"
+  #     script: |
 
-        Write-Host $(packagePath)
-        Write-Host $(publishFeed)
+  - powershell: |
+      Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
+      # Import-Module Microsoft.PowerShell.Security
+      Import-Module Microsoft.PowerShell.PSResourceGet 
 
-        Get-ChildItem $(Build.SourcesDirectory) -Recurse
+      Write-Host $(packagePath)
+      Write-Host $(publishFeed)
 
-        Publish-PSResource -Path $(packagePath) -Repository $(publishFeed) -ApiKey 123
+      Get-ChildItem $(Build.SourcesDirectory) -Recurse
+
+      Publish-PSResource -Path $(packagePath) -Repository $(publishFeed) -ApiKey 123
