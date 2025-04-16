@@ -1,3 +1,4 @@
+/tools/private/*.ps1
 tests/out*
 coverage.xml
 myenv.ps1
