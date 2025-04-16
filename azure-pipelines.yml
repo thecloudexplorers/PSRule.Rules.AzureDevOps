@@ -22,6 +22,9 @@ steps:
         # Import-Module Microsoft.PowerShell.Security
         Import-Module Microsoft.PowerShell.PSResourceGet 
 
-        Get-ChildItem $(Build.SourcesDirectory)
+        Write-Host $(packagePath)
+        Write-Host $(publishFeed)
+
+        Get-ChildItem $(Build.SourcesDirectory) -Recurse
 
         Publish-PSResource -Path $(packagePath) -Repository $(publishFeed) -ApiKey 123
