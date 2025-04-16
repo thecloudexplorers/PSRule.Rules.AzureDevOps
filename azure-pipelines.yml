@@ -22,4 +22,6 @@ steps:
         # Import-Module Microsoft.PowerShell.Security
         Import-Module Microsoft.PowerShell.PSResourceGet 
         
-        Publish-PSResource -Path $(packagetPath) -Repository $(publishFeed) -ApiKey 123      
+        Get-ChildItem $(Build.SourcesDirectory)
+
+        Publish-PSResource -Path $(packagetPath) -Repository $(publishFeed) -ApiKey 123      src\PSRule.Rules.AzureDevOps
