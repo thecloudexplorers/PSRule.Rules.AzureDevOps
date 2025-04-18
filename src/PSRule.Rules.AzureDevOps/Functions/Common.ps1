@@ -1,87 +1,114 @@
-﻿<#
+﻿    <#
     .SYNOPSIS
-    Connect to Azure DevOps for a session using a Service Principal, Managed Identity or Personal Access Token (PAT)
+        Connects to an Azure DevOps organization for use with PSRule.Rules.AzureDevOps cmdlets.
 
     .DESCRIPTION
-    Connect to Azure DevOps for a session using a Service Principal, Managed Identity or Personal Access Token (PAT)
+        The Connect-AzDevOps function establishes a connection to an Azure DevOps organization using one of several authentication methods: Personal Access Token (PAT), Service Principal, Managed Identity, or Bearer token. The connection details are stored in a script-level variable for use by other cmdlets in the PSRule.Rules.AzureDevOps module.
 
     .PARAMETER Organization
-    Organization name for Azure DevOps
+        The name of the Azure DevOps organization to connect to.
 
     .PARAMETER PAT
-    Personal Access Token (PAT) for Azure DevOps
-
-    .PARAMETER ClientId
-    Client ID for Service Principal
-
-    .PARAMETER ClientSecret
-    Client Secret for Service Principal
+        A Personal Access Token (PAT) used to authenticate to Azure DevOps. Used with the 'Pat' parameter set.
 
     .PARAMETER TenantId
-    Tenant ID for Service Principal
+        The Microsoft Entra ID tenant ID for Service Principal authentication. Used with the 'ServicePrincipal' parameter set.
 
-    .PARAMETER AuthType
-    Authentication type for Azure DevOps (PAT, ServicePrincipal, ManagedIdentity)
+    .PARAMETER ClientId
+        The client ID of the Service Principal. Used with the 'ServicePrincipal' parameter set.
 
-    .PARAMETER TokenType
-    Token type for Azure DevOps (FullAccess, FineGrained, ReadOnly)
+    .PARAMETER ClientSecret
+        The client secret of the Service Principal. Used with the 'ServicePrincipal' parameter set.
 
-    .EXAMPLE
-    Connect-AzDevOps -Organization $Organization -PAT $PAT
+    .PARAMETER ManagedIdentity
+        Specifies that a Managed Identity should be used for authentication. Used with the 'ManagedIdentity' parameter set.
 
-    .EXAMPLE
-    Connect-AzDevOps -Organization $Organization -ClientId $ClientId -ClientSecret $ClientSecret -TenantId $TenantId -AuthType ServicePrincipal
-
-    .EXAMPLE
-    Connect-AzDevOps -Organization $Organization -AuthType ManagedIdentity
+    .PARAMETER AccessToken
+        A Bearer token (e.g., OAuth 2.0 access token from Microsoft Entra ID) used to authenticate to Azure DevOps. Used with the 'Bearer' parameter set.
 
     .EXAMPLE
-    Connect-AzDevOps -Organization $Organization -PAT $PAT -AuthType PAT
+        Connect-AzDevOps -Organization "MyOrg" -PAT "abc123"
+        Connects to the "MyOrg" organization using a Personal Access Token.
 
-#>
-Function Connect-AzDevOps {
+    .EXAMPLE
+        Connect-AzDevOps -Organization "MyOrg" -AccessToken "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Ik..."
+        Connects to the "MyOrg" organization using a Bearer token.
+
+    .EXAMPLE
+        Connect-AzDevOps -Organization "MyOrg" -TenantId "00000000-0000-0000-0000-000000000000" -ClientId "11111111-1111-1111-1111-111111111111" -ClientSecret "secret"
+        Connects to the "MyOrg" organization using a Service Principal.
+
+    .EXAMPLE
+        Connect-AzDevOps -Organization "MyOrg" -ManagedIdentity
+        Connects to the "MyOrg" organization using a Managed Identity.
+
+    .NOTES
+        - The Bearer token must have appropriate permissions for Azure DevOps APIs (e.g., read access to projects and settings).
+        - Bearer tokens typically expire after 1 hour; re-run Connect-AzDevOps with a new token if expired.
+        - The connection is stored in a script-level variable and persists for the session.
+
+    .LINK
+        https://docs.microsoft.com/en-us/rest/api/azure/devops/
+    #>
+    function Connect-AzDevOps {
     [CmdletBinding()]
-    [OutputType([AzureDevOpsConnection])]
     param (
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [string]
         $Organization,
-        [Parameter(ParameterSetName = 'PAT')]
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Pat')]
         [string]
         $PAT,
-        [Parameter(ParameterSetName = 'ServicePrincipal', Mandatory=$true)]
-        [string]
-        $ClientId,
-        [Parameter(ParameterSetName = 'ServicePrincipal', Mandatory=$true)]
-        [string]
-        $ClientSecret,
-        [Parameter(ParameterSetName = 'ServicePrincipal', Mandatory=$true)]
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'ServicePrincipal')]
         [string]
         $TenantId,
-        [Parameter()]
-        [ValidateSet('PAT', 'ServicePrincipal', 'ManagedIdentity')]
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'ServicePrincipal')]
         [string]
-        $AuthType = 'PAT',
-        [Parameter()]
-        [ValidateSet('FullAccess', 'FineGrained', 'ReadOnly')]
+        $ClientId,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'ServicePrincipal')]
         [string]
-        $TokenType = 'FullAccess'
+        $ClientSecret,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'ManagedIdentity')]
+        [switch]
+        $ManagedIdentity,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Bearer')]
+        [string]
+        $AccessToken
     )
-    switch ($AuthType) {
-        'PAT' {
-            $connection = [AzureDevOpsConnection]::new($Organization, $PAT, $TokenType)
+
+    switch ($PSCmdlet.ParameterSetName) {
+        'Pat' {
+            $script:connection = [AzureDevOpsConnection]::new($Organization, $PAT)
         }
         'ServicePrincipal' {
-            $connection = [AzureDevOpsConnection]::new($Organization, $ClientId, $ClientSecret, $TenantId, $TokenType)
+            $script:connection = [AzureDevOpsConnection]::new($Organization, $ClientId, $ClientSecret, $TenantId)
         }
         'ManagedIdentity' {
-            $connection = [AzureDevOpsConnection]::new($Organization, $TokenType)
+            $script:connection = [AzureDevOpsConnection]::new($Organization)
+        }
+        'Bearer' {
+            $script:connection = [AzureDevOpsConnection]::new($Organization, $AccessToken, 'FullAccess', $true)
         }
     }
-    $script:connection = $connection
+
+    # Verify connection with a simple API call
+    try {
+        $uri = "https://dev.azure.com/$Organization/_apis/projects?api-version=7.0"
+        Invoke-RestMethod -Uri $uri -Method Get -Headers $script:connection.GetHeader() | Out-Null
+        Write-Verbose "Successfully connected to Azure DevOps organization: $Organization"
+    }
+    catch {
+        throw "Failed to connect to Azure DevOps: $($_.Exception.Message)"
+    }
 }
 
-# End of Function Connect-AzDevOps
+Export-ModuleMember -Function Connect-AzDevOps
 
 <#
     .SYNOPSIS
