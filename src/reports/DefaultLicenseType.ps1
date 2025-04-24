@@ -34,10 +34,7 @@ param (
     [System.String] $OrganizationId,
 
     [Parameter(Mandatory)]
-    [System.String] $PersonalAccessToken,
-
-    [Parameter(Mandatory)]
-    [System.String] $PatTokenOwnerName
+    [System.String] $AccessToken
 )
 
 # Source the external function to create authentication header
@@ -47,7 +44,7 @@ param (
 . ".\src\helper-functions\Export-ToExcel.ps1"
 
 # Configure headers for HTTP requests to the Azure DevOps API
-[System.Collections.Hashtable] $headers = New-AdoAuthenticationHeader -PatToken $PersonalAccessToken -PatTokenOwnerName $PatTokenOwnerName
+[System.Collections.Hashtable] $headers = New-AdoAuthenticationHeader -AccessToken $AccessToken
 
 # Initialize report array
 [System.Object[]] $report = @()
