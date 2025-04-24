@@ -9,6 +9,9 @@ trigger:
 pool:
   vmImage: windows-latest
 
+variables:
+  - group: azdo-psrule-run
+
 steps:
   # - task: NuGetAuthenticate@1
   #   inputs:
