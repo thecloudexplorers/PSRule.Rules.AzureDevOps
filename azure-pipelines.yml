@@ -7,8 +7,8 @@ trigger:
   - main
 
 pool:
-  MSHosted-WorkloadsPool
-  # vmImage: windows-latest
+  # MSHosted-WorkloadsPool
+  vmImage: windows-latest
 
 variables:
   - group: azdo-psrule-run
