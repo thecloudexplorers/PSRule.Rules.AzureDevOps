@@ -12,14 +12,14 @@
     The Entra ID (Azure AD) tenant ID used to scope the query.
     API: https://aexprodweu1.vsaex.visualstudio.com/_apis/EnterpriseCatalog/Organizations?tenantId={tenantId}
 
-    .PARAMETER PersonalAccessToken
+    .PARAMETER AccessToken
     A valid Azure DevOps Bearer token
 
     .PARAMETER PatTokenOwnerName
     The username associated with the PAT token, typically an email.
 
     .EXAMPLE
-    .\TenantOrganizationConnections.ps1 -TenantId "a74be31f-7904-4c43-8ef5-c82967c8e559" -PersonalAccessToken "myPAT" -PatTokenOwnerName "Ben John"
+    .\TenantOrganizationConnections.ps1 -TenantId "a74be31f-7904-4c43-8ef5-c82967c8e559" -AccessToken "bearer" -PatTokenOwnerName "Ben John"
 #>
 
 param (

@@ -16,14 +16,14 @@
     This function uses the internal Azure DevOps billing API:
     https://azdevopscommerce.dev.azure.com/{orgId}/_apis/AzComm/DefaultLicenseType
 
-    .PARAMETER PersonalAccessToken
-    The Personal Access Token (PAT) for authenticating with the Azure DevOps API.
+    .PARAMETER AccessToken
+    The Access Token (bearer) for authenticating with the Azure DevOps API.
 
     .PARAMETER PatTokenOwnerName
     The username associated with the PAT token, typically an email.
 
     .EXAMPLE
-    .\DefaultLicenseType.ps1 -Organization "myOrg" -OrganizationId "20b34e00-7898-7763-950d-098764ad3d2c" -PersonalAccessToken "myPAT" -PatTokenOwnerName "Ben John"
+    .\DefaultLicenseType.ps1 -Organization "myOrg" -OrganizationId "20b34e00-7898-7763-950d-098764ad3d2c" -AccessToken "bearer" -PatTokenOwnerName "Ben John"
 #>
 
 param (
