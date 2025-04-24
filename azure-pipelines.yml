@@ -12,7 +12,7 @@ pool:
 steps:
   # - task: NuGetAuthenticate@1
   #   inputs:
-  #     feedUrl: "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3/index.json"
+  #     feedUrl: "https://pkgs.dev.azure.com/<organization>/ssc-set/_packaging/<organization>-ssc-set-psmod-dev-feed/nuget/v3/index.json"
 
   # - task: PowerShell@2
   #   inputs:
@@ -27,6 +27,8 @@ steps:
       Write-Host "Registering Azure DevOps Artifacts as Upstream Repository"
 
       Register-PSRepository -Name "PSGalleryUpstream" -SourceLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2" -PublishLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2" -InstallationPolicy Trusted -Credential $myCredentialsObject
+
+      Write-Host "Install PSResourceGet Module"
 
       Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
       # Import-Module Microsoft.PowerShell.Security
@@ -48,8 +50,8 @@ steps:
 
   #     # Step 2: Create a Credential Object
   #     # Replace <YourUsername> and <YourPAT> with your Azure DevOps username and Personal Access Token
-  #     $username = "wesley.camargo@TCSNLPS.onmicrosoft.com"
-  #     $patToken = "$env:azdoDevopsAssessmentLocalToken" | ConvertTo-SecureString -AsPlainText -Force
+  #     $username = ""
+  #     $patToken = "$patToken" | ConvertTo-SecureString -AsPlainText -Force
   #     $credentials = New-Object System.Management.Automation.PSCredential($username, $patToken)
 
   #     # # Step 3: Set Up Secret Management
@@ -63,7 +65,7 @@ steps:
   #     # Step 5: Register the PowerShell Repository
   #     # Replace <YourOrganizationName>, <YourProjectName>, and <YourFeedName> with your Azure DevOps details
   #     Register-PSResourceRepository -Name "tcsnlps-ssc-set-psmod-dev-feed" `
-  #         -Uri "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3/index.json" `
+  #         -Uri "https://pkgs.dev.azure.com/<organization>/ssc-set/_packaging/<organization>-ssc-set-psmod-dev-feed/nuget/v3/index.json" `
   #         -Trusted `
   #         -CredentialInfo $CredentialInfo
 
@@ -73,8 +75,8 @@ steps:
 
   #     $packagetPath = "C:\01-tcs\01-repos\01-projects\03-gdh\PSRule.Rules.AzureDevOps\src\PSRule.Rules.AzureDevOps"
 
-  #     Publish-PSResource -Path $(packagePath) -Repository "tcsnlps-ssc-set-psmod-dev-feed" -Credential $credentials -ApiKey 123
+  #     Publish-PSResource -Path $(packagePath) -Repository "<organization>-ssc-set-psmod-dev-feed" -Credential $credentials -ApiKey 123
 
   #     Publish-PSResource -Path .\scripts\ -Repository FabrikamFiberFeed -Credential $credentials -ApiKey az -verbose
 
-  #     Publish-PSResource -Path $packagePath -Repository "tcsnlps-ssc-set-psmod-dev-feed" -Credential $credentials -ApiKey 123
+  #     Publish-PSResource -Path $packagePath -Repository "<organization>-ssc-set-psmod-dev-feed" -Credential $credentials -ApiKey 123
