@@ -20,9 +20,11 @@ steps:
   #     script: |
 
   - powershell: |
-      Write-Host "Converting PAT Token to secure string"
+      Write-Host "Converting PAT Token to secure string..."
       $securePatToken = "$env:TOKEN" | ConvertTo-SecureString -AsPlainText -Force
-      $credential = New-Object System.Management.Automation.PSCredential("$env:USER" , $securePatToken)
+
+      Write-Host "Creating credential..."
+      $credential = New-Object System.Management.Automation.PSCredential("$env:USER" , "$securePatToken")
       $(publishFeed) = "tcsnlps-ssc-set-psmod-dev-feed"
 
       Write-Host "Registering Nuget Repository..."
