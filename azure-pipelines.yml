@@ -24,7 +24,7 @@ steps:
       $securePatToken = "$(patToken)" | ConvertTo-SecureString -AsPlainText -Force
 
       Write-Host "Creating credential..."
-      $credential = New-Object System.Management.Automation.PSCredential "$(patUser)", $securePatToken
+      $credential = New-Object System.Management.Automation.PSCredential "$(patUser)", "$securePatToken"
 
       $(publishFeed) = "tcsnlps-ssc-set-psmod-dev-feed"
 
