@@ -53,7 +53,7 @@ steps:
 
       Get-ChildItem -Recurse $(Build.ArtifactStagingDirectory)
 
-      $packagetPath = "$(Build.ArtifactStagingDirectory)\PSRule.Rules.AzureDevOps\src\PSRule.Rules.AzureDevOps"
+      $packagePath = "$(Build.ArtifactStagingDirectory)\src\PSRule.Rules.AzureDevOps"      
 
       Write-Host $packagePath
       Write-Host $publishFeed
