@@ -24,6 +24,9 @@ steps:
 
   - powershell: |
       Import-Module Microsoft.PowerShell.Security
+
+      Install-Module -Name PowerShellGet -Force -AllowClobber
+
       Install-PSResource Microsoft.PowerShell.SecretManagement -TrustRepository
       Install-PSResource Microsoft.PowerShell.SecretStore -TrustRepository
 
