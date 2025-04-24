@@ -21,8 +21,8 @@ steps:
 
   - powershell: |
       Write-Host "Converting PAT Token to secure string"
-      $securePatToken = "$env:TOKEN" | ConvertTo-SecureString -AsPlainText -Force
-      $credential = New-Object System.Management.Automation.PSCredential("$env:USER" , $securePatToken)
+      $securePatToken = $env:TOKEN | ConvertTo-SecureString -AsPlainText -Force
+      $credential = New-Object System.Management.Automation.PSCredential($env:USER , $securePatToken)
       $(publishFeed) = "tcsnlps-ssc-set-psmod-dev-feed"
 
       Write-Host "Registering Nuget Repository..."
@@ -50,8 +50,8 @@ steps:
       Write-Host "Publishing package '$(packagePath)' to feed '$(publishFeed)'"
       Publish-PSResource -Path $(packagePath) -Repository $(publishFeed) -ApiKey 123
     env:
-      USER: $patUser
-      TOKEN: $patToken
+      USER: $(patUser)
+      TOKEN: $(patToken)
 
   # - powershell: |
   #     Install-Module Microsoft.PowerShell.SecretManagement
