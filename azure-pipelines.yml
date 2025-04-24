@@ -24,6 +24,9 @@ steps:
 
   - powershell: |
       Import-Module Microsoft.PowerShell.Security
+      Install-PSResource Microsoft.PowerShell.SecretManagement -TrustRepository
+      Install-PSResource Microsoft.PowerShell.SecretStore -TrustRepository
+
       # Install-Module Microsoft.PowerShell.PSResourceGet -Force
       # # Import-Module Microsoft.PowerShell.Security
       # Import-Module Microsoft.PowerShell.PSResourceGet 
