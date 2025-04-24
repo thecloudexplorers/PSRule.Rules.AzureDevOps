@@ -47,7 +47,8 @@ steps:
 
       Write-Host "Install PSResourceGet Module"
 
-      Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
+      Install-PSResource -Name Microsoft.PowerShell.PSResourceGet
+      # Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
       # Import-Module Microsoft.PowerShell.Security
       Import-Module Microsoft.PowerShell.PSResourceGet 
 
