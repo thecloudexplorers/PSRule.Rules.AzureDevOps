@@ -24,7 +24,7 @@ steps:
   #     script: |
 
   - powershell: |
-      Import-Module Microsoft.PowerShell.Security
+      # Import-Module Microsoft.PowerShell.Security
 
       Install-Module -Name PowerShellGet -Force -AllowClobber
 
