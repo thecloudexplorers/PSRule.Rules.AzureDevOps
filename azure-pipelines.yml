@@ -30,7 +30,7 @@ steps:
 
       $credential = New-Object System.Management.Automation.PSCredential ("$(patUser)", $securePatToken)
 
-      $(publishFeed) = "tcsnlps-ssc-set-psmod-dev-feed"
+      $publishFeed = "tcsnlps-ssc-set-psmod-dev-feed"
 
       Write-Host "Registering Nuget Repository..."
 
@@ -49,13 +49,17 @@ steps:
       # Import-Module Microsoft.PowerShell.Security
       Import-Module Microsoft.PowerShell.PSResourceGet 
 
-      Write-Host $(packagePath)
-      Write-Host $(publishFeed)
+      Get-ChildItem -Recurse $(Build.ArtifactStagingDirectory)
+
+      $packagetPath = "$(Build.ArtifactStagingDirectory)\PSRule.Rules.AzureDevOps\src\PSRule.Rules.AzureDevOps"
+
+      Write-Host $packagePath
+      Write-Host $publishFeed
 
       Get-ChildItem $(Build.SourcesDirectory) -Recurse
 
-      Write-Host "Publishing package '$(packagePath)' to feed '$(publishFeed)'"
-      Publish-PSResource -Path $(packagePath) -Repository $(publishFeed) -ApiKey 123
+      Write-Host "Publishing package '$packagePath' to feed '$publishFeed'"
+      Publish-PSResource -Path $packagePath -Repository $publishFeed -ApiKey 123
 
   # - powershell: |
   #     Install-Module Microsoft.PowerShell.SecretManagement
