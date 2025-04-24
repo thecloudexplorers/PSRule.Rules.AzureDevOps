@@ -21,7 +21,7 @@ steps:
 
   - powershell: |
       Write-Host "Converting PAT Token to secure string"
-      $patToken = $($(patToken) | ConvertTo-SecureString -AsPlainText -Force)
+      $patToken = "$(patToken)" | ConvertTo-SecureString -AsPlainText -Force
       $myCredentialsObject = New-Object System.Management.Automation.PSCredential($patUser, $patToken)
 
       Write-Host "Registering Azure DevOps Artifacts as Upstream Repository"
