@@ -21,8 +21,8 @@ steps:
 
   - powershell: |
       Write-Host "Converting PAT Token to secure string"
-      $patToken = "$(patToken)" | ConvertTo-SecureString -AsPlainText -Force
-      $myCredentialsObject = New-Object System.Management.Automation.PSCredential($patUser, $patToken)
+      $securePatToken = $env:TOKEN | ConvertTo-SecureString -AsPlainText -Force
+      $myCredentialsObject = New-Object System.Management.Automation.PSCredential($env:USER , $securePatToken)
 
       Write-Host "Registering Azure DevOps Artifacts as Upstream Repository"
 
@@ -38,6 +38,11 @@ steps:
       Get-ChildItem $(Build.SourcesDirectory) -Recurse
 
       Publish-PSResource -Path $(packagePath) -Repository $(publishFeed) -ApiKey 123
+    env:
+      MY_MAPPED_ENV_VAR: $(mySecret) # the recommended way to map to an env variable
+      # $env:USER
+      USER: $patUser
+      TOKEN: $patToken
 
   # - powershell: |
   #     Install-Module Microsoft.PowerShell.SecretManagement
