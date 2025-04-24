@@ -24,6 +24,10 @@ steps:
 
   - powershell: |
       Import-Module Microsoft.PowerShell.Security
+      Install-Module Microsoft.PowerShell.PSResourceGet -Force
+      # Import-Module Microsoft.PowerShell.Security
+      Import-Module Microsoft.PowerShell.PSResourceGet 
+
 
       Write-Host "Converting PAT Token to secure string..."
       $securePatToken = ConvertTo-SecureString "$(AZDO-PAT)" -AsPlainText -Force
@@ -52,11 +56,11 @@ steps:
 
       # Install-PSResource -Name Microsoft.PowerShell.PSResourceGet
       # Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
-      Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
+      Install-Module Microsoft.PowerShell.PSResourceGet -Force
       # Import-Module Microsoft.PowerShell.Security
       Import-Module Microsoft.PowerShell.PSResourceGet 
 
-      Get-ChildItem -Recurse $(Build.ArtifactStagingDirectory)
+      Get-ChildItem -Recurse "C:\Users\VssAdministrator\AppData\Local"
 
       $packagePath = "$(Build.ArtifactStagingDirectory)\src\PSRule.Rules.AzureDevOps"      
 
