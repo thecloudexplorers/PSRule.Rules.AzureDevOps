@@ -7,8 +7,7 @@ trigger:
   - main
 
 pool:
-  default
-  # vmImage: windows-latest
+  vmImage: windows-latest
 
 variables:
   - group: azdo-psrule-run
