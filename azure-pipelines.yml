@@ -39,8 +39,6 @@ steps:
 
       Publish-PSResource -Path $(packagePath) -Repository $(publishFeed) -ApiKey 123
     env:
-      MY_MAPPED_ENV_VAR: $(mySecret) # the recommended way to map to an env variable
-      # $env:USER
       USER: $patUser
       TOKEN: $patToken
 
