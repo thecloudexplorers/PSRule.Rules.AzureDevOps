@@ -5,13 +5,16 @@
     Retrieves the default license type for new users in an Azure DevOps organization.
 
     .DESCRIPTION
-    Queries the Azure DevOps billing API to determine the default license type assigned to new users (e.g., Basic, Stakeholder) and exports the result to an Excel file.
+    Queries the Azure DevOps billing API to determine the default license type assigned to new users 
+    (e.g., Basic, Stakeholder) and exports the result to an Excel file.
 
     .PARAMETER Organization
     The name of the Azure DevOps organization.
 
     .PARAMETER OrganizationId
     The GUID of the Azure DevOps organization.
+    This function uses the internal Azure DevOps billing API:
+    https://azdevopscommerce.dev.azure.com/{orgId}/_apis/AzComm/DefaultLicenseType
 
     .PARAMETER PersonalAccessToken
     The Personal Access Token (PAT) for authenticating with the Azure DevOps API.
@@ -20,7 +23,7 @@
     The username associated with the PAT token, typically an email.
 
     .EXAMPLE
-    .\DefaultLicenseType.ps1 -Organization "myOrg" -OrganizationId "14b34e2d-2a98-4463-950d-b4d864ad3d2c" -PersonalAccessToken "myPAT" -PatTokenOwnerName "Ben John"
+    .\DefaultLicenseType.ps1 -Organization "myOrg" -OrganizationId "20b34e00-7898-7763-950d-098764ad3d2c" -PersonalAccessToken "myPAT" -PatTokenOwnerName "Ben John"
 #>
 
 param (
