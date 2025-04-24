@@ -21,10 +21,10 @@ steps:
 
   - powershell: |
       Write-Host "Converting PAT Token to secure string..."
-      $securePatToken = ConvertTo-SecureString "$(patToken)" -AsPlainText -Force
+      $securePatToken = ConvertTo-SecureString "$(AZDO-PAT)" -AsPlainText -Force
 
       Write-Host "Creating credential..."
-      # $credential = New-Object System.Management.Automation.PSCredential "$(patUser)", "$securePatToken"
+
       $credential = New-Object System.Management.Automation.PSCredential ("$(patUser)", $securePatToken)
 
       $(publishFeed) = "tcsnlps-ssc-set-psmod-dev-feed"
