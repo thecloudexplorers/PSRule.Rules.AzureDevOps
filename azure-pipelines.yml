@@ -52,6 +52,7 @@ steps:
 
       # Install-PSResource -Name Microsoft.PowerShell.PSResourceGet
       # Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
+      Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
       # Import-Module Microsoft.PowerShell.Security
       Import-Module Microsoft.PowerShell.PSResourceGet 
 
