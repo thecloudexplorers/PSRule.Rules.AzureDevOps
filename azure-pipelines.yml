@@ -22,11 +22,19 @@ steps:
   - powershell: |
       Write-Host "Converting PAT Token to secure string"
       $securePatToken = $env:TOKEN | ConvertTo-SecureString -AsPlainText -Force
-      $myCredentialsObject = New-Object System.Management.Automation.PSCredential($env:USER , $securePatToken)
+      $credential = New-Object System.Management.Automation.PSCredential($env:USER , $securePatToken)
+      $(publishFeed) = "tcsnlps-ssc-set-psmod-dev-feed"
 
-      Write-Host "Registering Azure DevOps Artifacts as Upstream Repository"
+      Write-Host "Registering Nuget Repository..."
 
-      Register-PSRepository -Name "PSGalleryUpstream" -SourceLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2" -PublishLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2" -InstallationPolicy Trusted -Credential $myCredentialsObject
+      Install-PackageProvider NuGet -Scope CurrentUser -Force > $null
+
+      Write-Host "Registering Azure DevOps Artifacts as Upstream Repository..."
+
+      if ($null -eq (Get-PSRepository -Name $(publishFeed) -ErrorAction SilentlyContinue))
+      {
+        Register-PSRepository -Name $(publishFeed) -SourceLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2" -PublishLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2" -InstallationPolicy Trusted -Credential $credential
+      }
 
       Write-Host "Install PSResourceGet Module"
 
@@ -39,6 +47,7 @@ steps:
 
       Get-ChildItem $(Build.SourcesDirectory) -Recurse
 
+      Write-Host "Publishing package '$(packagePath)' to feed '$(publishFeed)'"
       Publish-PSResource -Path $(packagePath) -Repository $(publishFeed) -ApiKey 123
     env:
       USER: $patUser
