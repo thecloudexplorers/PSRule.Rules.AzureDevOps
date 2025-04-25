@@ -42,7 +42,7 @@ steps:
 
 
       # Write-Host "Converting PAT Token to secure string..."
-      # $securePatToken = ConvertTo-SecureString "$(AZDO-PAT)" -AsPlainText -Force
+      $securePatToken = ConvertTo-SecureString "$(AZDO-PAT)" -AsPlainText -Force
 
       # Write-Host "Creating credential..."
 
