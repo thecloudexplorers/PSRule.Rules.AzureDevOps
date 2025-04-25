@@ -88,142 +88,181 @@ steps:
   #     Install-PSResource -Name "Az.Advisor" -Repository "PSGalleryUpstream" -TrustRepository
   #   displayName: "Setup PSResource & SecretStore"
 
-  - powershell: |
-      # Import-Module Microsoft.PowerShell.Security
-      Get-Module -ListAvailable -Name PowerShellGet -Refresh
+  # Assumes this is inside your existing pipeline under `steps:`
+  - task: PowerShell@2
+    displayName: "Publish PowerShell Module to Azure Artifacts"
+    inputs:
+      targetType: "inline"
+      pwsh: true
+      script: |
+        # 1) Ensure the PSResourceGet cmdlets are available
+        Install-Module Microsoft.PowerShell.PSResourceGet -Force -AllowClobber
 
-      # Install-Module -Name PowerShellGet -Force -AllowClobber
+        # 2) Create a PSCredential from your PAT
+        $username = "$(patUser)"
+        $patToken = ConvertTo-SecureString "$(AZDO-PAT)" -AsPlainText -Force
+        $creds = New-Object System.Management.Automation.PSCredential($username, $patToken)
 
-      Install-Module -Name PowerShellGet -Force -AllowClobber
-
-      Install-Module Microsoft.PowerShell.SecretManagement -Force -AllowClobber
-      Install-Module Microsoft.PowerShell.SecretStore -Force -AllowClobber
-
-      # Install-Module Microsoft.PowerShell.PSResourceGet -Force
-      # # Import-Module Microsoft.PowerShell.Security
-      # Import-Module Microsoft.PowerShell.PSResourceGet
-
-      # Write-Host "Converting PAT Token to secure string..."
-      $securePatToken = ConvertTo-SecureString "$(AZDO-PAT)" -AsPlainText -Force
-
-      # Write-Host "Creating credential..."
-
-      # $credential = New-Object System.Management.Automation.PSCredential ("$(patUser)", $securePatToken)
-
-      # $publishFeed = "tcsnlps-ssc-set-psmod-dev-feed"
-
-      # Write-Host "Registering Nuget Repository..."
-
-      # Install-PackageProvider NuGet -Scope CurrentUser -Force > $null
-
-      # Write-Host "Registering Azure DevOps Artifacts as Upstream Repository..."
-
-      # if ($null -eq (Get-PSRepository -Name $(publishFeed) -ErrorAction SilentlyContinue))
-      # {
-      #   Register-PSRepository -Name $(publishFeed) -SourceLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2" -PublishLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2" -InstallationPolicy Trusted -Credential $credential
-      # }
-
-      # # /\ Above its working!
-
-      # Write-Host "Install PSResourceGet Module"
-
-      # # Install-PSResource -Name Microsoft.PowerShell.PSResourceGet
-      # # Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
-      # # Install-Module Microsoft.PowerShell.PSResourceGet -Force
-      # # Import-Module Microsoft.PowerShell.Security
-      # # Import-Module Microsoft.PowerShell.PSResourceGet
-
-      # Get-ChildItem -Recurse "C:\Users\VssAdministrator\AppData\Local"
-
-      # $packagePath = "$(Build.ArtifactStagingDirectory)\src\PSRule.Rules.AzureDevOps"
-
-      # Write-Host $packagePath
-      # Write-Host $publishFeed
-
-      # Get-ChildItem $(Build.SourcesDirectory) -Recurse
-
-      # Write-Host "Publishing package '$packagePath' to feed '$publishFeed'"
-      # Publish-PSResource -Path $packagePath -Repository $publishFeed -ApiKey 123
-
-      # # /\ Old version
-
-      # $artifactFeed = 'https://pkgs.dev.azure.com/<your org>/<you-project>/_packaging/<Feed-Name>/nuget/v3/index.json'
-      # $password = "tempPasswordToSecureTheSecretVault" | ConvertTo-SecureString -AsPlainText -Force
-      # Register-SecretVault -Name "TheSecretVault" -ModuleName Microsoft.PowerShell.SecretStore
-      # $storeConfiguration = @{
-      #     Authentication = 'Password'
-      #     PasswordTimeout = 3600 # 1 hour
-      #     Interaction = 'None'
-      #     Password = $password
-      #     Confirm = $false
-      # }
-      # Set-SecretStoreConfiguration @storeConfiguration
-      # Unlock-SecretStore $password
-
-      # $accessToken = "$env:SYSTEM_ACCESSTOKEN" | ConvertTo-SecureString -AsPlainText -Force
-      # $credsAzureDevopsServices = New-Object System.Management.Automation.PSCredential("xxx", $accessToken)
-      # Set-Secret -Name "MyCredential" -Secret $credsAzureDevopsServices -Vault "TheSecretVault"
-
-      # $CredentialInfo = [Microsoft.PowerShell.PSResourceGet.UtilClasses.PSCredentialInfo]::new('TheSecretVault', 'MyCredential')
-      # Register-PSResourceRepository -Name "PSGalleryUpstream" -Uri "$artifactFeed" -Credential $CredentialInfo
-      # Install-PSResource -Name "Az.Advisor" -Repository "PSGalleryUpstream" -TrustRepository
-
-      $artifactFeed = 'https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3/index.json'
-
-      Write-Host "Converting PAT Token to secure string..."
-      $password = ConvertTo-SecureString "$(AZDO-PAT)" -AsPlainText -Force
-
-      if (-not (Get-SecretVault -Name 'TheSecretVault' -ErrorAction SilentlyContinue)) {
-          Register-SecretVault -Name 'TheSecretVault' -ModuleName 'Microsoft.PowerShell.SecretStore'
-          Write-Host 'SecretVault "TheSecretVault" has been registered.'
-      }
-      else {
-          Write-Host 'SecretVault "TheSecretVault" already exists.'
-      }
-
-      $secretVault = Get-SecretVault -Name "TheSecretVault"
-      if(-not($secretVault)){
-        # Register-SecretVault -Name "TheSecretVault" -ModuleName Microsoft.PowerShell.SecretStore
-        $storeConfiguration = @{
-            Authentication = 'Password'
-            PasswordTimeout = 3600 # 1 hour
-            Interaction = 'None'
-            Password = $password
-            Confirm = $false
+        # 3) Register the feed as a PSResource repository
+        #    Only do this once per agent/machine
+        if (-not (Get-PSResourceRepository -Name 'AzureArtifacts' -ErrorAction SilentlyContinue)) {
+            Register-PSResourceRepository `
+              -Name 'AzureArtifacts' `
+              -Uri $env:artifactFeed `
+              -Credential $creds `
+              -Trusted
         }
-        Get-SecretStoreConfiguration
 
-        Set-SecretStoreConfiguration @storeConfiguration
-      }
-      Unlock-SecretStore $password
+        # 4) Publish your module
+        #    Path should point to the folder containing your .psd1/.psm1
+        Publish-PSResource `
+          -Path "$(Build.ArtifactStagingDirectory)\MyModule" `
+          -Repository 'AzureArtifacts' `
+          -Credential $creds `
+          -ApiKey 'az' `
+          -Verbose
+    env:
+      # Provided by your pipeline variables or variable groups
+      AZDO-PAT: $(AZDO-PAT)
+      patUser: $(patUser)
+      artifactFeed: "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3/index.json"
 
-      $accessToken = "$(System.AccessToken) " | ConvertTo-SecureString -AsPlainText -Force
-      # $credsAzureDevopsServices = New-Object System.Management.Automation.PSCredential("xxx", $accessToken)
-      $credsAzureDevopsServices = New-Object System.Management.Automation.PSCredential ("$(patUser)", $securePatToken)
-      Set-Secret -Name "MyCredential" -Secret $credsAzureDevopsServices -Vault "TheSecretVault"
+  # - powershell: |
+  #     # Import-Module Microsoft.PowerShell.Security
+  #     Get-Module -ListAvailable -Name PowerShellGet -Refresh
 
-      $CredentialInfo = [Microsoft.PowerShell.PSResourceGet.UtilClasses.PSCredentialInfo]::new('TheSecretVault', 'MyCredential')
-      Register-PSResourceRepository -Name "PSGalleryUpstream" -Uri "$artifactFeed" -Credential $CredentialInfo
-      Install-PSResource -Name "Az.Advisor" -Repository "PSGalleryUpstream" -TrustRepository
+  #     # Install-Module -Name PowerShellGet -Force -AllowClobber
 
-      # Write-Host "Install PSResourceGet Module"
+  #     Install-Module -Name PowerShellGet -Force -AllowClobber
 
-      # # Install-PSResource -Name Microsoft.PowerShell.PSResourceGet
-      # # # Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
-      # # # Import-Module Microsoft.PowerShell.Security
-      # # Import-Module Microsoft.PowerShell.PSResourceGet
+  #     Install-Module Microsoft.PowerShell.SecretManagement -Force -AllowClobber
+  #     Install-Module Microsoft.PowerShell.SecretStore -Force -AllowClobber
 
-      # # Get-ChildItem -Recurse $(Build.ArtifactStagingDirectory)
+  #     # Install-Module Microsoft.PowerShell.PSResourceGet -Force
+  #     # # Import-Module Microsoft.PowerShell.Security
+  #     # Import-Module Microsoft.PowerShell.PSResourceGet
 
-      # $packagePath = "$(Build.ArtifactStagingDirectory)\src\PSRule.Rules.AzureDevOps"
+  #     # Write-Host "Converting PAT Token to secure string..."
+  #     $securePatToken = ConvertTo-SecureString "$(AZDO-PAT)" -AsPlainText -Force
 
-      # Write-Host $packagePath
-      # Write-Host $publishFeed
+  #     # Write-Host "Creating credential..."
 
-      # Get-ChildItem $(Build.SourcesDirectory) -Recurse
+  #     # $credential = New-Object System.Management.Automation.PSCredential ("$(patUser)", $securePatToken)
 
-      # Write-Host "Publishing package '$packagePath' to feed '$publishFeed'"
-      # Publish-PSResource -Path $packagePath -Repository $publishFeed -ApiKey 123
+  #     # $publishFeed = "tcsnlps-ssc-set-psmod-dev-feed"
+
+  #     # Write-Host "Registering Nuget Repository..."
+
+  #     # Install-PackageProvider NuGet -Scope CurrentUser -Force > $null
+
+  #     # Write-Host "Registering Azure DevOps Artifacts as Upstream Repository..."
+
+  #     # if ($null -eq (Get-PSRepository -Name $(publishFeed) -ErrorAction SilentlyContinue))
+  #     # {
+  #     #   Register-PSRepository -Name $(publishFeed) -SourceLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2" -PublishLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2" -InstallationPolicy Trusted -Credential $credential
+  #     # }
+
+  #     # # /\ Above its working!
+
+  #     # Write-Host "Install PSResourceGet Module"
+
+  #     # # Install-PSResource -Name Microsoft.PowerShell.PSResourceGet
+  #     # # Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
+  #     # # Install-Module Microsoft.PowerShell.PSResourceGet -Force
+  #     # # Import-Module Microsoft.PowerShell.Security
+  #     # # Import-Module Microsoft.PowerShell.PSResourceGet
+
+  #     # Get-ChildItem -Recurse "C:\Users\VssAdministrator\AppData\Local"
+
+  #     # $packagePath = "$(Build.ArtifactStagingDirectory)\src\PSRule.Rules.AzureDevOps"
+
+  #     # Write-Host $packagePath
+  #     # Write-Host $publishFeed
+
+  #     # Get-ChildItem $(Build.SourcesDirectory) -Recurse
+
+  #     # Write-Host "Publishing package '$packagePath' to feed '$publishFeed'"
+  #     # Publish-PSResource -Path $packagePath -Repository $publishFeed -ApiKey 123
+
+  #     # # /\ Old version
+
+  #     # $artifactFeed = 'https://pkgs.dev.azure.com/<your org>/<you-project>/_packaging/<Feed-Name>/nuget/v3/index.json'
+  #     # $password = "tempPasswordToSecureTheSecretVault" | ConvertTo-SecureString -AsPlainText -Force
+  #     # Register-SecretVault -Name "TheSecretVault" -ModuleName Microsoft.PowerShell.SecretStore
+  #     # $storeConfiguration = @{
+  #     #     Authentication = 'Password'
+  #     #     PasswordTimeout = 3600 # 1 hour
+  #     #     Interaction = 'None'
+  #     #     Password = $password
+  #     #     Confirm = $false
+  #     # }
+  #     # Set-SecretStoreConfiguration @storeConfiguration
+  #     # Unlock-SecretStore $password
+
+  #     # $accessToken = "$env:SYSTEM_ACCESSTOKEN" | ConvertTo-SecureString -AsPlainText -Force
+  #     # $credsAzureDevopsServices = New-Object System.Management.Automation.PSCredential("xxx", $accessToken)
+  #     # Set-Secret -Name "MyCredential" -Secret $credsAzureDevopsServices -Vault "TheSecretVault"
+
+  #     # $CredentialInfo = [Microsoft.PowerShell.PSResourceGet.UtilClasses.PSCredentialInfo]::new('TheSecretVault', 'MyCredential')
+  #     # Register-PSResourceRepository -Name "PSGalleryUpstream" -Uri "$artifactFeed" -Credential $CredentialInfo
+  #     # Install-PSResource -Name "Az.Advisor" -Repository "PSGalleryUpstream" -TrustRepository
+
+  #     $artifactFeed = 'https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3/index.json'
+
+  #     Write-Host "Converting PAT Token to secure string..."
+  #     $password = ConvertTo-SecureString "$(AZDO-PAT)" -AsPlainText -Force
+
+  #     if (-not (Get-SecretVault -Name 'TheSecretVault' -ErrorAction SilentlyContinue)) {
+  #         Register-SecretVault -Name 'TheSecretVault' -ModuleName 'Microsoft.PowerShell.SecretStore'
+  #         Write-Host 'SecretVault "TheSecretVault" has been registered.'
+  #     }
+  #     else {
+  #         Write-Host 'SecretVault "TheSecretVault" already exists.'
+  #     }
+
+  #     $secretVault = Get-SecretVault -Name "TheSecretVault"
+  #     if(-not($secretVault)){
+  #       # Register-SecretVault -Name "TheSecretVault" -ModuleName Microsoft.PowerShell.SecretStore
+  #       $storeConfiguration = @{
+  #           Authentication = 'Password'
+  #           PasswordTimeout = 3600 # 1 hour
+  #           Interaction = 'None'
+  #           Password = $password
+  #           Confirm = $false
+  #       }
+  #       Get-SecretStoreConfiguration
+
+  #       Set-SecretStoreConfiguration @storeConfiguration
+  #     }
+  #     Unlock-SecretStore $password
+
+  #     $accessToken = "$(System.AccessToken) " | ConvertTo-SecureString -AsPlainText -Force
+  #     # $credsAzureDevopsServices = New-Object System.Management.Automation.PSCredential("xxx", $accessToken)
+  #     $credsAzureDevopsServices = New-Object System.Management.Automation.PSCredential ("$(patUser)", $securePatToken)
+  #     Set-Secret -Name "MyCredential" -Secret $credsAzureDevopsServices -Vault "TheSecretVault"
+
+  #     $CredentialInfo = [Microsoft.PowerShell.PSResourceGet.UtilClasses.PSCredentialInfo]::new('TheSecretVault', 'MyCredential')
+  #     Register-PSResourceRepository -Name "PSGalleryUpstream" -Uri "$artifactFeed" -Credential $CredentialInfo
+  #     Install-PSResource -Name "Az.Advisor" -Repository "PSGalleryUpstream" -TrustRepository
+
+  #     # Write-Host "Install PSResourceGet Module"
+
+  #     # # Install-PSResource -Name Microsoft.PowerShell.PSResourceGet
+  #     # # # Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
+  #     # # # Import-Module Microsoft.PowerShell.Security
+  #     # # Import-Module Microsoft.PowerShell.PSResourceGet
+
+  #     # # Get-ChildItem -Recurse $(Build.ArtifactStagingDirectory)
+
+  #     # $packagePath = "$(Build.ArtifactStagingDirectory)\src\PSRule.Rules.AzureDevOps"
+
+  #     # Write-Host $packagePath
+  #     # Write-Host $publishFeed
+
+  #     # Get-ChildItem $(Build.SourcesDirectory) -Recurse
+
+  #     # Write-Host "Publishing package '$packagePath' to feed '$publishFeed'"
+  #     # Publish-PSResource -Path $packagePath -Repository $publishFeed -ApiKey 123
 
   # - powershell: |
   #     Install-Module Microsoft.PowerShell.SecretManagement
