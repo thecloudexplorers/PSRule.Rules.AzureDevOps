@@ -25,7 +25,7 @@ steps:
   #     targetType: "inline"
   #     script: |
 
-  - powershell: 
+  - powershell: |
       # Install core modules
       Install-Module PowerShellGet -Force -AllowClobber
       Install-Module Microsoft.PowerShell.SecretManagement -Force -AllowClobber
@@ -66,7 +66,6 @@ steps:
       Register-PSResourceRepository -Name "PSGalleryUpstream" -Uri $artifactFeed -Credential $credInfo
       Install-PSResource -Name "Az.Advisor" -Repository "PSGalleryUpstream" -TrustRepository
 
-
   # - powershell: |
   #     # Import-Module Microsoft.PowerShell.Security
   #     Get-Module -ListAvailable -Name PowerShellGet -Refresh
@@ -80,8 +79,7 @@ steps:
 
   #     # Install-Module Microsoft.PowerShell.PSResourceGet -Force
   #     # # Import-Module Microsoft.PowerShell.Security
-  #     # Import-Module Microsoft.PowerShell.PSResourceGet 
-
+  #     # Import-Module Microsoft.PowerShell.PSResourceGet
 
   #     # Write-Host "Converting PAT Token to secure string..."
   #     $securePatToken = ConvertTo-SecureString "$(AZDO-PAT)" -AsPlainText -Force
@@ -105,18 +103,17 @@ steps:
 
   #     # # /\ Above its working!
 
-
   #     # Write-Host "Install PSResourceGet Module"
 
   #     # # Install-PSResource -Name Microsoft.PowerShell.PSResourceGet
   #     # # Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
   #     # # Install-Module Microsoft.PowerShell.PSResourceGet -Force
   #     # # Import-Module Microsoft.PowerShell.Security
-  #     # # Import-Module Microsoft.PowerShell.PSResourceGet 
+  #     # # Import-Module Microsoft.PowerShell.PSResourceGet
 
   #     # Get-ChildItem -Recurse "C:\Users\VssAdministrator\AppData\Local"
 
-  #     # $packagePath = "$(Build.ArtifactStagingDirectory)\src\PSRule.Rules.AzureDevOps"      
+  #     # $packagePath = "$(Build.ArtifactStagingDirectory)\src\PSRule.Rules.AzureDevOps"
 
   #     # Write-Host $packagePath
   #     # Write-Host $publishFeed
@@ -127,7 +124,6 @@ steps:
   #     # Publish-PSResource -Path $packagePath -Repository $publishFeed -ApiKey 123
 
   #     # # /\ Old version
-
 
   #     # $artifactFeed = 'https://pkgs.dev.azure.com/<your org>/<you-project>/_packaging/<Feed-Name>/nuget/v3/index.json'
   #     # $password = "tempPasswordToSecureTheSecretVault" | ConvertTo-SecureString -AsPlainText -Force
@@ -144,12 +140,11 @@ steps:
 
   #     # $accessToken = "$env:SYSTEM_ACCESSTOKEN" | ConvertTo-SecureString -AsPlainText -Force
   #     # $credsAzureDevopsServices = New-Object System.Management.Automation.PSCredential("xxx", $accessToken)
-  #     # Set-Secret -Name "MyCredential" -Secret $credsAzureDevopsServices -Vault "TheSecretVault" 
+  #     # Set-Secret -Name "MyCredential" -Secret $credsAzureDevopsServices -Vault "TheSecretVault"
 
   #     # $CredentialInfo = [Microsoft.PowerShell.PSResourceGet.UtilClasses.PSCredentialInfo]::new('TheSecretVault', 'MyCredential')
   #     # Register-PSResourceRepository -Name "PSGalleryUpstream" -Uri "$artifactFeed" -Credential $CredentialInfo
   #     # Install-PSResource -Name "Az.Advisor" -Repository "PSGalleryUpstream" -TrustRepository
-
 
   #     $artifactFeed = 'https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3/index.json'
 
@@ -178,23 +173,22 @@ steps:
   #     $accessToken = "$(System.AccessToken) " | ConvertTo-SecureString -AsPlainText -Force
   #     # $credsAzureDevopsServices = New-Object System.Management.Automation.PSCredential("xxx", $accessToken)
   #     $credsAzureDevopsServices = New-Object System.Management.Automation.PSCredential ("$(patUser)", $securePatToken)
-  #     Set-Secret -Name "MyCredential" -Secret $credsAzureDevopsServices -Vault "TheSecretVault" 
+  #     Set-Secret -Name "MyCredential" -Secret $credsAzureDevopsServices -Vault "TheSecretVault"
 
   #     $CredentialInfo = [Microsoft.PowerShell.PSResourceGet.UtilClasses.PSCredentialInfo]::new('TheSecretVault', 'MyCredential')
   #     Register-PSResourceRepository -Name "PSGalleryUpstream" -Uri "$artifactFeed" -Credential $CredentialInfo
   #     Install-PSResource -Name "Az.Advisor" -Repository "PSGalleryUpstream" -TrustRepository
-
 
   #     # Write-Host "Install PSResourceGet Module"
 
   #     # # Install-PSResource -Name Microsoft.PowerShell.PSResourceGet
   #     # # # Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force
   #     # # # Import-Module Microsoft.PowerShell.Security
-  #     # # Import-Module Microsoft.PowerShell.PSResourceGet 
+  #     # # Import-Module Microsoft.PowerShell.PSResourceGet
 
   #     # # Get-ChildItem -Recurse $(Build.ArtifactStagingDirectory)
 
-  #     # $packagePath = "$(Build.ArtifactStagingDirectory)\src\PSRule.Rules.AzureDevOps"      
+  #     # $packagePath = "$(Build.ArtifactStagingDirectory)\src\PSRule.Rules.AzureDevOps"
 
   #     # Write-Host $packagePath
   #     # Write-Host $publishFeed
