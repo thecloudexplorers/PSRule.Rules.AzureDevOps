@@ -47,37 +47,30 @@ steps:
       # 4) Unlock the vault before configuration
       Unlock-SecretStore -Password $patPassword
 
-      # ──────────────────────────────────────────────────────────────
-      # 5) INSERT IDPOTENT SECRETSTORE CONFIGURATION BLOCK HERE
-      # This will set interaction & timeout, and only supply -Password
-      # on first run (avoiding the “new password cannot be added” error).
-      $desiredConfig = @{
-          Interaction     = 'None'
-          PasswordTimeout = 3600     # 1 hour
-          Confirm         = $false
-      }
-
-      try {
-          # First attempt: establish or overwrite password
-          Set-SecretStoreConfiguration @desiredConfig -Password $patPassword
-          Write-Host 'SecretStore configured (initial password set).'
-      }
-      catch {
-          if ($_.Exception.Message -match 'new password cannot be added') {
-              # Vault already had a password—just update interaction & timeout
-              Set-SecretStoreConfiguration @desiredConfig
-              Write-Host 'SecretStore configuration updated (password unchanged).'
+         # ──────────────────────────────────────────────────────────────
+          # 5) Idempotent SecretStore configuration (may re-lock the vault)
+          try {
+              Set-SecretStoreConfiguration @desiredConfig -Password $patPassword
+              Write-Host 'SecretStore configured (initial password set).'
           }
-          else {
-              Write-Error "Failed to configure SecretStore: $($_.Exception.Message)"
-              throw
+          catch {
+              if ($_.Exception.Message -match 'new password cannot be added') {
+                  Set-SecretStoreConfiguration @desiredConfig
+                  Write-Host 'SecretStore configuration updated (password unchanged).'
+              }
+              else {
+                  throw
+              }
           }
-      }
-      # ──────────────────────────────────────────────────────────────
+          # ──────────────────────────────────────────────────────────────
 
-      # 6) Store your DevOps credentials in the vault
-      $credsAzureDevops = New-Object System.Management.Automation.PSCredential("$(patUser)", $systemAccessToken)
-      Set-Secret -Name "MyCredential" -Secret $credsAzureDevops -Vault "TheSecretVault"
+          # ←── **ADD THIS**: vault is now locked again, so re-unlock it
+          Unlock-SecretStore -Password $patPassword
+
+          # 6) Now you can store your credential without the “vault locked” error
+          $credsAzureDevops = New-Object System.Management.Automation.PSCredential("$(patUser)", $systemAccessToken)
+          Set-Secret -Name "MyCredential" -Secret $credsAzureDevops -Vault "TheSecretVault"
+
 
       # 7) Register your PSResource upstream repository and install Az.Advisor
       $artifactFeed = 'https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3/index.json'
