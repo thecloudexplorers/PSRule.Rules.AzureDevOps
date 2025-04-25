@@ -48,6 +48,10 @@ function Export-AzDevOpsRuleData {
 
         [Parameter(Mandatory = $true)]
         [string]
+        $OrganizationId,
+
+        [Parameter(Mandatory = $true)]
+        [string]
         $Project,
 
         [Parameter(Mandatory = $true)]
@@ -94,6 +98,8 @@ function Export-AzDevOpsRuleData {
         Export-AzDevOpsRetentionSettings -Project $Project -PassThru
         Write-Verbose "Exporting OrganizationPipelines settings"
         Export-AdoOrganizationPipelinesSettings -Organization $Organization -PassThru
+        Write-Verbose "Exporting Organization General Overview"
+        Export-AdoOrganizationGeneralOverview -Organization $Organization -PassThru
     } else {
         Write-Verbose "Exporting rule data for project $Project to $OutputPath"
         Write-Verbose "Exporting project"
@@ -118,6 +124,8 @@ function Export-AzDevOpsRuleData {
         Export-AzDevOpsRetentionSettings -Project $Project -OutputPath $OutputPath
         Write-Verbose "Exporting OrganizationPipelines settings"
         Export-AdoOrganizationPipelinesSettings -Organization $Organization -OutputPath $OutputPath
+        Write-Verbose "Exporting Organization General Overview"
+        Export-AdoOrganizationGeneralOverview -Organization $Organization -OutputPath $OutputPath
     }
 }
 

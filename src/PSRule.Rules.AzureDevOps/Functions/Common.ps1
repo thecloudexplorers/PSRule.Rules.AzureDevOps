@@ -57,6 +57,10 @@
         [string]
         $Organization,
 
+        [Parameter(Mandatory = $true)]
+        [string]
+        $OrganizationId,
+
         [Parameter(Mandatory = $true, ParameterSetName = 'Pat')]
         [string]
         $PAT,
@@ -93,7 +97,7 @@
             $script:connection = [AzureDevOpsConnection]::new($Organization)
         }
         'Bearer' {
-            $script:connection = [AzureDevOpsConnection]::new($Organization, $AccessToken, 'FullAccess', $true)
+            $script:connection = [AzureDevOpsConnection]::new($Organization, $OrganizationId, $AccessToken, 'FullAccess', $true)
         }
     }
 

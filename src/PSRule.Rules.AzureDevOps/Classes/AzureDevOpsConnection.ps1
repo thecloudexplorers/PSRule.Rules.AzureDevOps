@@ -9,6 +9,7 @@
 
 class AzureDevOpsConnection {
     [string]$Organization
+    [string]$OrganizationId
     [string]$PAT
     [string]$ClientId
     [string]$ClientSecret
@@ -89,12 +90,14 @@ class AzureDevOpsConnection {
     # Constructor for Bearer Token
     AzureDevOpsConnection(
         [string]$Organization,
+        [string]$OrganizationId,
         [string]$AccessToken,
         [string]$TokenType = 'FullAccess',
         [switch]$Bearer
     )
     {
         $this.Organization = $Organization
+        $this.OrganizationId = $OrganizationId
         $this.Token = "Bearer $AccessToken"
         $this.TokenExpires = [System.DateTime]::Now.AddHours(1) # Default 1-hour expiry
         $this.TokenType = $TokenType
