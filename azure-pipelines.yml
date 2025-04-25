@@ -8,9 +8,9 @@ trigger:
   - users/wcamargo/*
 
 pool:
-  # MSHosted-WorkloadsPool
+  MSHosted-WorkloadsPool
 
-  vmImage: windows-latest
+  # vmImage: windows-latest
 
 variables:
   - group: azdo-psrule-run
