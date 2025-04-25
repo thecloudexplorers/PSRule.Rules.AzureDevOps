@@ -26,15 +26,16 @@ steps:
   #     script: |
 
   - powershell: |
-      # Install core modules
-      Install-Module PowerShellGet -Force -AllowClobber
+      # 1) Install core modules
+      Install-Module PowerShellGet                         -Force -AllowClobber
       Install-Module Microsoft.PowerShell.SecretManagement -Force -AllowClobber
       Install-Module Microsoft.PowerShell.SecretStore      -Force -AllowClobber
 
-      # Convert PAT to secure string
-      $password = ConvertTo-SecureString "$(AZDO-PAT)" -AsPlainText -Force
+      # 2) Convert your PAT and the system access token to secure strings
+      $patPassword       = ConvertTo-SecureString "$(AZDO-PAT)"       -AsPlainText -Force
+      $systemAccessToken = ConvertTo-SecureString "$(System.AccessToken)" -AsPlainText -Force
 
-      # Ensure SecretVault is registered
+      # 3) Ensure SecretVault is registered
       if (-not (Get-SecretVault -Name 'TheSecretVault' -ErrorAction SilentlyContinue)) {
           Register-SecretVault -Name 'TheSecretVault' -ModuleName 'Microsoft.PowerShell.SecretStore'
           Write-Host 'Registered SecretVault "TheSecretVault".'
@@ -43,28 +44,48 @@ steps:
           Write-Host 'SecretVault "TheSecretVault" already exists.'
       }
 
-      # Configure & unlock the SecretStore
-      $storeConfig = @{
-          Authentication  = 'Password'
-          PasswordTimeout = 3600
+      # 4) Unlock the vault before configuration
+      Unlock-SecretStore -Password $patPassword
+
+      # ──────────────────────────────────────────────────────────────
+      # 5) INSERT IDPOTENT SECRETSTORE CONFIGURATION BLOCK HERE
+      # This will set interaction & timeout, and only supply -Password
+      # on first run (avoiding the “new password cannot be added” error).
+      $desiredConfig = @{
           Interaction     = 'None'
-          Password        = $password
+          PasswordTimeout = 3600     # 1 hour
           Confirm         = $false
       }
-      Set-SecretStoreConfiguration @storeConfig
-      Unlock-SecretStore $password
 
-      # Create a PSCredential and store it
-      $secureDevOpsToken = ConvertTo-SecureString "$(System.AccessToken)" -AsPlainText -Force
-      $creds = New-Object System.Management.Automation.PSCredential("$(patUser)", $secureDevOpsToken)
-      Set-Secret -Name "MyCredential" -Secret $creds -Vault "TheSecretVault"
+      try {
+          # First attempt: establish or overwrite password
+          Set-SecretStoreConfiguration @desiredConfig -Password $patPassword
+          Write-Host 'SecretStore configured (initial password set).'
+      }
+      catch {
+          if ($_.Exception.Message -match 'new password cannot be added') {
+              # Vault already had a password—just update interaction & timeout
+              Set-SecretStoreConfiguration @desiredConfig
+              Write-Host 'SecretStore configuration updated (password unchanged).'
+          }
+          else {
+              Write-Error "Failed to configure SecretStore: $($_.Exception.Message)"
+              throw
+          }
+      }
+      # ──────────────────────────────────────────────────────────────
 
-      # Register the PSResource repo and install
+      # 6) Store your DevOps credentials in the vault
+      $credsAzureDevops = New-Object System.Management.Automation.PSCredential("$(patUser)", $systemAccessToken)
+      Set-Secret -Name "MyCredential" -Secret $credsAzureDevops -Vault "TheSecretVault"
+
+      # 7) Register your PSResource upstream repository and install Az.Advisor
       $artifactFeed = 'https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3/index.json'
       $credInfo     = [Microsoft.PowerShell.PSResourceGet.UtilClasses.PSCredentialInfo]::new('TheSecretVault','MyCredential')
 
       Register-PSResourceRepository -Name "PSGalleryUpstream" -Uri $artifactFeed -Credential $credInfo
       Install-PSResource -Name "Az.Advisor" -Repository "PSGalleryUpstream" -TrustRepository
+    displayName: "Setup PSResource & SecretStore"
 
   # - powershell: |
   #     # Import-Module Microsoft.PowerShell.Security
