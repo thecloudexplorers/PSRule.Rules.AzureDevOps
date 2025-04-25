@@ -44,8 +44,8 @@ steps:
           Write-Host 'SecretVault "TheSecretVault" already exists.'
       }
 
-      # 4) Unlock the vault before configuration
-      Unlock-SecretStore -Password $patPassword
+      # # 4) Unlock the vault before configuration
+      # Unlock-SecretStore -Password $patPassword
 
       # ──────────────────────────────────────────────────────────────
       # 5) Idempotent SecretStore configuration (explicit parameters)
