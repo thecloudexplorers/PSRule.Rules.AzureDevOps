@@ -47,22 +47,32 @@ steps:
       # 4) Unlock the vault before configuration
       Unlock-SecretStore -Password $patPassword
 
-         # ──────────────────────────────────────────────────────────────
-          # 5) Idempotent SecretStore configuration (may re-lock the vault)
-          try {
-              Set-SecretStoreConfiguration @desiredConfig -Password $patPassword
-              Write-Host 'SecretStore configured (initial password set).'
+      # ──────────────────────────────────────────────────────────────
+      # 5) Idempotent SecretStore configuration (explicit parameters)
+      try {
+          # First run: establish the password and set your non-interactive, 1h timeout
+          Set-SecretStoreConfiguration `
+              -Interaction   None `
+              -PasswordTimeout 3600 `
+              -Password      $patPassword `
+              -Confirm:$false
+          Write-Host 'SecretStore configured (initial password set).'
+      }
+      catch {
+          if ($_.Exception.Message -match 'new password cannot be added') {
+              # Subsequent runs: just tweak interaction & timeout (no password param)
+              Set-SecretStoreConfiguration `
+                  -Interaction   None `
+                  -PasswordTimeout 3600 `
+                  -Confirm:$false
+              Write-Host 'SecretStore configuration updated (password unchanged).'
           }
-          catch {
-              if ($_.Exception.Message -match 'new password cannot be added') {
-                  Set-SecretStoreConfiguration @desiredConfig
-                  Write-Host 'SecretStore configuration updated (password unchanged).'
-              }
-              else {
-                  throw
-              }
+          else {
+              throw
           }
-          # ──────────────────────────────────────────────────────────────
+      }
+      # ──────────────────────────────────────────────────────────────
+
 
           # ←── **ADD THIS**: vault is now locked again, so re-unlock it
           Unlock-SecretStore -Password $patPassword
