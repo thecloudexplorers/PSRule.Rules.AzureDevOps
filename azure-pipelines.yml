@@ -5,6 +5,7 @@
 
 trigger:
   - main
+  - users/wcamargo/*
 
 pool:
   # MSHosted-WorkloadsPool
