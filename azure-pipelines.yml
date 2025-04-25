@@ -33,8 +33,8 @@ steps:
 
       Install-Module -Name PowerShellGet -Force -AllowClobber
 
-      Install-Module Microsoft.PowerShell.SecretManagement -TrustRepository
-      Install-Module Microsoft.PowerShell.SecretStore -TrustRepository
+      Install-Module Microsoft.PowerShell.SecretManagement -Force -AllowClobber
+      Install-Module Microsoft.PowerShell.SecretStore -Force -AllowClobber
 
       # Install-Module Microsoft.PowerShell.PSResourceGet -Force
       # # Import-Module Microsoft.PowerShell.Security
