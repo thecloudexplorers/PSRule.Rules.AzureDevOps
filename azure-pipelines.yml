@@ -18,6 +18,8 @@ variables:
 steps:
   - powershell: |
       Import-Module Microsoft.PowerShell.Security
+      Install-Module -Name Microsoft.PowerShell.PSResourceGet -Scope CurrentUser
+
       # Import-Module Microsoft.PowerShell.PSResourceGet 
 
       Write-Host "Converting PAT Token to secure string..."
