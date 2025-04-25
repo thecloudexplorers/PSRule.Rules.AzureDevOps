@@ -114,7 +114,15 @@ steps:
       Write-Host "Converting PAT Token to secure string..."
       $password = ConvertTo-SecureString "$(AZDO-PAT)" -AsPlainText -Force
 
-      Register-SecretVault -Name "TheSecretVault" -ModuleName Microsoft.PowerShell.SecretStore
+      if (-not (Get-SecretVault -Name 'TheSecretVault' -ErrorAction SilentlyContinue)) {
+          Register-SecretVault -Name 'TheSecretVault' -ModuleName 'Microsoft.PowerShell.SecretStore'
+          Write-Host 'SecretVault "TheSecretVault" has been registered.'
+      }
+      else {
+          Write-Host 'SecretVault "TheSecretVault" already exists.'
+      }
+
+      # Register-SecretVault -Name "TheSecretVault" -ModuleName Microsoft.PowerShell.SecretStore
       $storeConfiguration = @{
           Authentication = 'Password'
           PasswordTimeout = 3600 # 1 hour
