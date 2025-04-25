@@ -181,15 +181,20 @@ steps:
           Write-Host 'SecretVault "TheSecretVault" already exists.'
       }
 
-      # Register-SecretVault -Name "TheSecretVault" -ModuleName Microsoft.PowerShell.SecretStore
-      $storeConfiguration = @{
-          Authentication = 'Password'
-          PasswordTimeout = 3600 # 1 hour
-          Interaction = 'None'
-          Password = $password
-          Confirm = $false
+      $secretVault = Get-SecretVault -Name "TheSecretVault"
+      if(-not($secretVault)){
+        # Register-SecretVault -Name "TheSecretVault" -ModuleName Microsoft.PowerShell.SecretStore
+        $storeConfiguration = @{
+            Authentication = 'Password'
+            PasswordTimeout = 3600 # 1 hour
+            Interaction = 'None'
+            Password = $password
+            Confirm = $false
+        }
+        Get-SecretStoreConfiguration
+
+        Set-SecretStoreConfiguration @storeConfiguration
       }
-      Set-SecretStoreConfiguration @storeConfiguration
       Unlock-SecretStore $password
 
       $accessToken = "$(System.AccessToken) " | ConvertTo-SecureString -AsPlainText -Force
