@@ -18,6 +18,7 @@ variables:
 steps:
   - powershell: |
       Import-Module Microsoft.PowerShell.Security
+      Import-Module Microsoft.PowerShell.PSResourceGet 
 
       Write-Host "Converting PAT Token to secure string..."
       $securePatToken = ConvertTo-SecureString "$(AZDO-PAT)" -AsPlainText -Force
@@ -38,6 +39,17 @@ steps:
       {
         Register-PSRepository -Name $(publishFeed) -SourceLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2" -PublishLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2" -InstallationPolicy Trusted -Credential $credential
       }
+        
+      $packagePath = "$(Build.ArtifactStagingDirectory)\src\PSRule.Rules.AzureDevOps"      
+
+
+      Write-Host $packagePath
+      Write-Host $publishFeed
+
+      Get-ChildItem $(Build.SourcesDirectory) -Recurse
+
+      Write-Host "Publishing package '$packagePath' to feed '$publishFeed'"
+      Publish-PSResource -Path $packagePath -Repository $publishFeed -ApiKey 123
 
   # - task: NuGetAuthenticate@1
   #   inputs:
