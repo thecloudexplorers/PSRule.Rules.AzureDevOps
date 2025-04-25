@@ -30,12 +30,14 @@ steps:
       Install-Module PowerShellGet                         -Force -AllowClobber
       Install-Module Microsoft.PowerShell.SecretManagement -Force -AllowClobber
       Install-Module Microsoft.PowerShell.SecretStore      -Force -AllowClobber
+      Install-Module Microsoft.PowerShell.PSResourceGet    -Force -AllowClobber
+      Import-Module Microsoft.PowerShell.PSResourceGet
 
       # 2) Convert your PAT and the system access token to secure strings
-      $patPassword       = ConvertTo-SecureString "$(AZDO-PAT)"       -AsPlainText -Force
+      $patPassword       = ConvertTo-SecureString "$(AZDO-PAT)"           -AsPlainText -Force
       $systemAccessToken = ConvertTo-SecureString "$(System.AccessToken)" -AsPlainText -Force
 
-      # 3) Ensure SecretVault is registered
+      # 3) Ensure the SecretVault is registered
       if (-not (Get-SecretVault -Name 'TheSecretVault' -ErrorAction SilentlyContinue)) {
           Register-SecretVault -Name 'TheSecretVault' -ModuleName 'Microsoft.PowerShell.SecretStore'
           Write-Host 'Registered SecretVault "TheSecretVault".'
@@ -44,25 +46,24 @@ steps:
           Write-Host 'SecretVault "TheSecretVault" already exists.'
       }
 
-      # # 4) Unlock the vault before configuration
-      # Unlock-SecretStore -Password $patPassword
+      # 4) Unlock the vault before configuration
+      Unlock-SecretStore -Password $patPassword
 
-      # ──────────────────────────────────────────────────────────────
-      # 5) Idempotent SecretStore configuration (explicit parameters)
+      # 5) Idempotently configure the SecretStore (this may re-lock it)
       try {
-          # First run: establish the password and set your non-interactive, 1h timeout
+          # First run: set password + desired settings
           Set-SecretStoreConfiguration `
-              -Interaction   None `
+              -Interaction     None `
               -PasswordTimeout 3600 `
-              -Password      $patPassword `
+              -Password        $patPassword `
               -Confirm:$false
           Write-Host 'SecretStore configured (initial password set).'
       }
       catch {
           if ($_.Exception.Message -match 'new password cannot be added') {
-              # Subsequent runs: just tweak interaction & timeout (no password param)
+              # Subsequent runs: just update interaction & timeout
               Set-SecretStoreConfiguration `
-                  -Interaction   None `
+                  -Interaction     None `
                   -PasswordTimeout 3600 `
                   -Confirm:$false
               Write-Host 'SecretStore configuration updated (password unchanged).'
@@ -71,22 +72,19 @@ steps:
               throw
           }
       }
-      # ──────────────────────────────────────────────────────────────
 
+      # 6) Vault is now locked again—unlock it for writing
+      Unlock-SecretStore -Password $patPassword
 
-          # ←── **ADD THIS**: vault is now locked again, so re-unlock it
-          Unlock-SecretStore -Password $patPassword
+      # 7) Store your DevOps PSCredential in the vault
+      $credsAzureDevops = New-Object System.Management.Automation.PSCredential("$(patUser)", $systemAccessToken)
+      Set-Secret -Name "MyCredential" -Secret $credsAzureDevops -Vault "TheSecretVault"
 
-          # 6) Now you can store your credential without the “vault locked” error
-          $credsAzureDevops = New-Object System.Management.Automation.PSCredential("$(patUser)", $systemAccessToken)
-          Set-Secret -Name "MyCredential" -Secret $credsAzureDevops -Vault "TheSecretVault"
-
-
-      # 7) Register your PSResource upstream repository and install Az.Advisor
+      # 8) Register the PSResource repo and install Az.Advisor
       $artifactFeed = 'https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v3/index.json'
       $credInfo     = [Microsoft.PowerShell.PSResourceGet.UtilClasses.PSCredentialInfo]::new('TheSecretVault','MyCredential')
 
-      Register-PSResourceRepository -Name "PSGalleryUpstream" -Uri $artifactFeed -Credential $credInfo
+      Register-PSResourceRepository -Name "PSGalleryUpstream" -Uri $artifactFeed -CredentialInfo $credInfo
       Install-PSResource -Name "Az.Advisor" -Repository "PSGalleryUpstream" -TrustRepository
     displayName: "Setup PSResource & SecretStore"
 
