@@ -18,7 +18,7 @@ variables:
 steps:
   - powershell: |
       Import-Module Microsoft.PowerShell.Security
-      Import-Module Microsoft.PowerShell.PSResourceGet 
+      # Import-Module Microsoft.PowerShell.PSResourceGet 
 
       Write-Host "Converting PAT Token to secure string..."
       $securePatToken = ConvertTo-SecureString "$(AZDO-PAT)" -AsPlainText -Force
