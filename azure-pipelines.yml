@@ -7,8 +7,9 @@ trigger:
   - main
 
 pool:
-  MSHosted-WorkloadsPool
-  # vmImage: windows-latest
+  # MSHosted-WorkloadsPool
+
+  vmImage: windows-latest
 
 variables:
   - group: azdo-psrule-run
@@ -28,6 +29,8 @@ steps:
       Get-Module -ListAvailable -Name PowerShellGet -Refresh
 
       # Install-Module -Name PowerShellGet -Force -AllowClobber
+
+      Install-Module -Name PowerShellGet -Force -AllowClobber
 
       Install-PSResource Microsoft.PowerShell.SecretManagement -TrustRepository
       Install-PSResource Microsoft.PowerShell.SecretStore -TrustRepository
