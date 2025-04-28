@@ -102,6 +102,8 @@ function Export-AzDevOpsRuleData {
         Export-AdoOrganizationGeneralOverview -Organization $Organization -PassThru
         Write-Verbose "Exporting Organization General Billing Settings"
         Export-AdoOrganizationGeneralBillingSettings -Organization $Organization -PassThru
+        Write-Verbose "Exporting Organization Security Policies"
+        Export-AdoOrganizationSecurityPolicies -Organization $Organization -PassThru
     } else {
         Write-Verbose "Exporting rule data for project $Project to $OutputPath"
         Write-Verbose "Exporting project"
@@ -130,6 +132,8 @@ function Export-AzDevOpsRuleData {
         Export-AdoOrganizationGeneralOverview -Organization $Organization -OutputPath $OutputPath
         Write-Verbose "Exporting Organization General Billing Settings"
         Export-AdoOrganizationGeneralBillingSettings -Organization $Organization -OutputPath $OutputPath
+        Write-Verbose "Exporting Organization Security Policies"
+        Export-AdoOrganizationSecurityPolicies -Organization $Organization -OutputPath $OutputPath
     }
 }
 

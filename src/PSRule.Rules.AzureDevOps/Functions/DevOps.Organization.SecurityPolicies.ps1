@@ -13,7 +13,6 @@
              Microsoft may change, deprecate, or remove it at any time without notice.
              Use in production scenarios at your own risk and validate regularly.
 
-
     .LINK
     https://github.com/PoshCode/PowerShellPracticeAndStyle
     https://learn.microsoft.com/en-us/powershell/scripting/developer/cmdlet/strongly-encouraged-development-guidelines
@@ -42,18 +41,36 @@ function Read-AdoOrganizationSecurityPolicies {
 
     try {
         # Use Invoke-WebRequest to allow content inspection before parsing
+        Write-Verbose "Querying API: $uri"
         $rawResponse = Invoke-WebRequest -Uri $uri -Method Get -Headers $headers -UseBasicParsing
 
-        # Check for HTML content which likely means the token is expired or invalid
+        # Check for HTML content indicating invalid/expired token
         if ($rawResponse.Content -match '<html' -or $rawResponse.RawContent -match 'Sign In') {
             throw "Access denied or token expired. Please verify your Bearer token is still valid."
         }
 
-        # Convert HTML-safe content into PowerShell object
+        # Parse JSON response
         $response = $rawResponse.Content | ConvertFrom-Json
 
         # Navigate to the internal data provider
         $policyData = $response.fps.dataProviders.data.'ms.vss-admin-web.organization-policies-data-provider'
+        if ($null -eq $policyData) {
+            throw "Policy data not found in API response."
+        }
+
+        # Expected policy fields (without Policy. prefix)
+        $expectedPolicies = @(
+            'Disallow Secure Shell',
+            'Allow Request Access Token',
+            'Allow Team Admins Invitations Access Token',
+            'Allow Feedback Collection',
+            'Enforce AAD Conditional Access',
+            'Disallow OAuth Authentication',
+            'Log Audit Events',
+            'Artifacts External Package Protection Token',
+            'Allow Anonymous Access',
+            'Disallow Aad Guest User Access'
+        )
 
         # Output settings to console for assessment
         Write-Host ""
@@ -61,6 +78,7 @@ function Read-AdoOrganizationSecurityPolicies {
         Write-Host ""
 
         $settings = @{}
+        $foundPolicies = @()
         foreach ($categoryName in $policyData.policies.PSObject.Properties.Name) {
             $policies = $policyData.policies.$categoryName
 
@@ -70,17 +88,30 @@ function Read-AdoOrganizationSecurityPolicies {
                 $p = $entry.policy
                 $name = $p.name
                 $desc = $entry.description
-                $effective = $p.effectiveValue
+                $effective = [bool]$p.effectiveValue  # Ensure boolean type
 
                 Write-Host " - $desc"
                 Write-Host "   Name: $name"
                 Write-Host "   Effective: $effective"
                 Write-Host ""
 
-                # Store settings with camelCase keys for JSON consistency
-                $settingsKey = $name -replace '\s+', '' -replace '^.', { $_.Value.ToLower() }
-                $settings[$settingsKey] = $effective
+                # Store settings with camelCase keys and single policy. prefix
+                $settingsKey = $name -replace '^Policy\.', '' -replace '\s+', '' -replace '^.', { $_.Value.ToLower() }
+                $settings[$settingsKey] = $effective  # Removed extra "policy." prefix
+
+                # Track policy names without Policy. prefix for validation
+                $cleanName = $name -replace '^Policy\.', ''
+                $foundPolicies += $cleanName
             }
+        }
+
+        # Validate expected policies
+        $missingPolicies = $expectedPolicies | Where-Object { $_ -notin $foundPolicies }
+        if ($missingPolicies) {
+            Write-Warning "Missing expected policies in API response: $($missingPolicies -join ', ')"
+        }
+        else {
+            Write-Verbose "All expected policies found in API response."
         }
 
         Write-Host "Assessment complete."
@@ -90,7 +121,8 @@ function Read-AdoOrganizationSecurityPolicies {
         return $settings
     }
     catch {
-        throw "Failed to retrieve or parse organization policy data: $($_.Exception.Message)"
+        Write-Error "Failed to retrieve or parse organization policy data: $($_.Exception.Message)"
+        throw
     }
 }
 
@@ -102,8 +134,8 @@ Export-ModuleMember -Function Read-AdoOrganizationSecurityPolicies
 
     .DESCRIPTION
     The Export-AdoOrganizationSecurityPolicies function retrieves security policy settings for a specified Azure DevOps organization using the provided access token. 
-    It formats the settings with metadata (e.g., ObjectType, ObjectName) and either saves them to a JSON file or returns them as an object, d
-    epending on the parameters provided. Requires a prior connection to Azure DevOps via Connect-AzDevOps.
+    It formats the settings with metadata (e.g., ObjectType, ObjectName) and either saves them to a JSON file or returns them as an object, depending on the parameters provided. 
+    Requires a prior connection to Azure DevOps via Connect-AzDevOps.
 
     .PARAMETER Organization
     The name of the Azure DevOps organization whose security policy settings will be exported.
@@ -160,40 +192,47 @@ function Export-AdoOrganizationSecurityPolicies {
 
     # Retrieve security policy settings
     try {
-        $settings = Read-AdoOrganizationSecurityPolicies -Organization $Organization -AccessToken $AccessToken
-        if ($null -eq $settings) {
-            throw "No Organization security policy settings returned from Read-AdoOrganizationSecurityPolicies."
+        Write-Verbose "Retrieving security policy settings for organization: $Organization"
+        $settings = Read-AdoOrganizationSecurityPolicies -Organization $Organization -AccessToken $AccessToken -Verbose
+        if ($null -eq $settings -or $settings.Count -eq 0) {
+            throw "No organization security policy settings returned from Read-AdoOrganizationSecurityPolicies."
         }
     }
     catch {
-        throw "Failed to get Organization security policy settings from Azure DevOps: $($_.Exception.Message)"
+        Write-Error "Failed to get organization security policy settings: $($_.Exception.Message)"
+        throw
     }
 
-    # Process settings into exportable format
-    $settingsDetails = @()
-    $settingsObject = [PSCustomObject]$settings
+    # Create settings object with metadata
+    $settingsObject = [PSCustomObject]@{
+        ObjectType = 'Azure.DevOps.Organization.Security.Policies'
+        ObjectName = "$($script:connection.Organization).OrganizationSecurityPolicies"
+        name       = 'OrganizationSecurityPolicies'
+        id         = @{
+            resourceName = 'OrganizationSecurityPolicies'
+            organization = $script:connection.Organization
+            originalId   = $null
+        }
+    }
 
-    # Add metadata properties
-    $settingsObject | Add-Member -MemberType NoteProperty -Name ObjectType -Value 'Azure.DevOps.Organization.Security.Policies' -Force
-    $settingsObject | Add-Member -MemberType NoteProperty -Name ObjectName -Value "$($script:connection.Organization).OrganizationSecurityPolicies" -Force
-    $settingsObject | Add-Member -MemberType NoteProperty -Name name -Value "OrganizationSecurityPolicies" -Force
-
-    # Create structured id object
-    $id = @{
-        originalId   = $null
-        resourceName = "OrganizationSecurityPolicies"
-        organization = $script:connection.Organization
-    } | ConvertTo-Json -Depth 100
-    $settingsObject | Add-Member -MemberType NoteProperty -Name id -Value $id -Force
-
-    $settingsDetails += $settingsObject
+    # Add policy settings with single policy. prefix
+    foreach ($key in $settings.Keys) {
+        $settingsObject | Add-Member -MemberType NoteProperty -Name "policy.$key" -Value $settings[$key] -Force
+    }
 
     # Output based on parameters
     if ($PassThru) {
-        Write-Output $settingsDetails
+        Write-Verbose "Returning settings object"
+        Write-Output $settingsObject
     }
     else {
-        $settingsDetails | ConvertTo-Json -Depth 100 | Out-File -FilePath "$OutputPath\OrganizationSecurityPolicies.ado.json"
+        if (-not (Test-Path $OutputPath)) {
+            New-Item -Path $OutputPath -ItemType Directory -Force | Out-Null
+        }
+        $outputFile = Join-Path $OutputPath 'OrganizationSecurityPolicies.ado.json'
+        Write-Verbose "Exporting settings to: $outputFile"
+        $settingsObject | ConvertTo-Json -Depth 10 | Out-File -FilePath $outputFile -Encoding UTF8
+        Write-Host "Exported security policy settings to: $outputFile"
     }
 }
 
