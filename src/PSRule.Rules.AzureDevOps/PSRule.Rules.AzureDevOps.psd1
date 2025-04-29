@@ -10,10 +10,10 @@
 
 
     # Script module or binary module file associated with this manifest.
-    RootModule        = 'TCE.PSRule.Rules.AzureDevOps.psm1'
+    RootModule        = 'PSRule.Rules.AzureDevOps.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.1.0'  # <- TCE = The Cloud Explorers
+    ModuleVersion     = '0.3.0'  # <- TCE = The Cloud Explorers
 
     # ID used to uniquely identify this module
     GUID              = '4d86d6fa-861b-4378-a6ce-b5be180f267e' # Generate a new GUID with [guid]::NewGuid()

@@ -17,41 +17,63 @@ variables:
 
 steps:
   - powershell: |
-      Import-Module Microsoft.PowerShell.Security
-      Install-Module -Name Microsoft.PowerShell.PSResourceGet -Scope CurrentUser
+      . "$(Build.ArtifactStagingDirectory)\src\helper-functions\Publish-ToAzureArtifactsPSRepo.ps1"        
 
-      # Import-Module Microsoft.PowerShell.PSResourceGet 
+      # Publish info
+      $organization = $(AZDO-ORGANIZATION)
+      $project = $(project)
+      $publishFeed = $(publishFeed)
 
-      Write-Host "Converting PAT Token to secure string..."
-      $securePatToken = ConvertTo-SecureString "$(AZDO-PAT)" -AsPlainText -Force
+      # Package info
+      $packagePath = "$(Build.ArtifactStagingDirectory)\src\PSRule.Rules.AzureDevOps"    
+      $apiKey = $(apiKey)
 
-      Write-Host "Creating credential..."
-
-      $credential = New-Object System.Management.Automation.PSCredential ("$(patUser)", $securePatToken)
-
-      $publishFeed = "tcsnlps-ssc-set-psmod-dev-feed"
-
-      Write-Host "Registering Nuget Repository..."
-
-      Install-PackageProvider NuGet -Scope CurrentUser -Force > $null
-
-      Write-Host "Registering Azure DevOps Artifacts as Upstream Repository..."
-
-      if ($null -eq (Get-PSRepository -Name $(publishFeed) -ErrorAction SilentlyContinue))
-      {
-        Register-PSRepository -Name $(publishFeed) -SourceLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2" -PublishLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2" -InstallationPolicy Trusted -Credential $credential
-      }
-        
-      $packagePath = "$(Build.ArtifactStagingDirectory)\src\PSRule.Rules.AzureDevOps"      
+      # Credentials to authenticate to AzDo
+      $username = $(patUser)
+      $patToken = $(AZDO-PAT)
 
 
-      Write-Host $packagePath
-      Write-Host $publishFeed
+      # It can be moved into the script
+      $RepositoryName = $(RepositoryName)
+      $SecretVault = "LocalVault"                
 
-      Get-ChildItem $(Build.SourcesDirectory) -Recurse
+      Publish-ToAzureArtifactsPSRepo -Organization $organization  -Project $project -FeedName $publishFeed -RepositoryName $RepositoryName -Username $username -PatToken $patToken -PackagePath $packagePath -ApiKey $apiKey -SecretVault $SecretVault
 
-      Write-Host "Publishing package '$packagePath' to feed '$publishFeed'"
-      Publish-PSResource -Path $packagePath -Repository $publishFeed -ApiKey 123
+  # - powershell: |
+  #     Import-Module Microsoft.PowerShell.Security
+  #     Install-Module -Name Microsoft.PowerShell.PSResourceGet -Scope CurrentUser
+
+  #     # Import-Module Microsoft.PowerShell.PSResourceGet
+
+  #     Write-Host "Converting PAT Token to secure string..."
+  #     $securePatToken = ConvertTo-SecureString "$(AZDO-PAT)" -AsPlainText -Force
+
+  #     Write-Host "Creating credential..."
+
+  #     $credential = New-Object System.Management.Automation.PSCredential ("$(patUser)", $securePatToken)
+
+  #     $publishFeed = "tcsnlps-ssc-set-psmod-dev-feed"
+
+  #     Write-Host "Registering Nuget Repository..."
+
+  #     Install-PackageProvider NuGet -Scope CurrentUser -Force > $null
+
+  #     Write-Host "Registering Azure DevOps Artifacts as Upstream Repository..."
+
+  #     if ($null -eq (Get-PSRepository -Name $(publishFeed) -ErrorAction SilentlyContinue))
+  #     {
+  #       Register-PSRepository -Name $(publishFeed) -SourceLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2" -PublishLocation "https://pkgs.dev.azure.com/tcsnlps/ssc-set/_packaging/tcsnlps-ssc-set-psmod-dev-feed/nuget/v2" -InstallationPolicy Trusted -Credential $credential
+  #     }
+
+  #     $packagePath = "$(Build.ArtifactStagingDirectory)\src\PSRule.Rules.AzureDevOps"
+
+  #     Write-Host $packagePath
+  #     Write-Host $publishFeed
+
+  #     Get-ChildItem $(Build.SourcesDirectory) -Recurse
+
+  #     Write-Host "Publishing package '$packagePath' to feed '$publishFeed'"
+  #     Publish-PSResource -Path $packagePath -Repository $publishFeed -ApiKey 123
 
   # - task: NuGetAuthenticate@1
   #   inputs:
