@@ -17,12 +17,15 @@ variables:
 
 steps:
   - powershell: |
-      . "$(Build.ArtifactStagingDirectory)\src\helper-functions\Publish-ToAzureArtifactsPSRepo.ps1"        
+      # . "$(Build.ArtifactStagingDirectory)\src\helper-functions\Publish-ToAzureArtifactsPSRepo.ps1"        
 
       # Publish info
       $organization = $(AZDO-ORGANIZATION)
       $project = $(project)
       $publishFeed = $(publishFeed)
+
+
+      $feedUrl = "https://pkgs.dev.azure.com/$organization/$project/_packaging/$publishFeed/nuget/v2"
 
       # Package info
       $packagePath = "$(Build.ArtifactStagingDirectory)\src\PSRule.Rules.AzureDevOps"    
@@ -33,11 +36,74 @@ steps:
       $patToken = $(AZDO-PAT)
 
 
-      # It can be moved into the script
-      $RepositoryName = $(RepositoryName)
-      $SecretVault = "LocalVault"                
 
-      Publish-ToAzureArtifactsPSRepo -Organization $organization  -Project $project -FeedName $publishFeed -RepositoryName $RepositoryName -Username $username -PatToken $patToken -PackagePath $packagePath -ApiKey $apiKey -SecretVault $SecretVault
+      $SecretVault = "LocalVault"
+
+      Install-Module -Name Microsoft.PowerShell.SecretStore -Repository PSGallery -Force
+      Install-Module -Name Microsoft.PowerShell.SecretManagement -Repository PSGallery -Force
+      Import-Module Microsoft.PowerShell.SecretStore
+      Import-Module Microsoft.PowerShell.SecretManagement
+
+      Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery
+      Import-Module Microsoft.PowerShell.Security
+      Import-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.1.1
+
+      #endregion
+
+      #region 1.1 - Create credential
+
+      $patToken = $patToken | ConvertTo-SecureString -AsPlainText -Force
+      $credentials = New-Object System.Management.Automation.PSCredential($username, $patToken)
+
+      $RepositoryName = "TCSNLPSUpstream"
+
+      #endregion
+
+      #region 1.2 - Register Secret Vault
+
+      # Managing a SecretStore vault - https://learn.microsoft.com/en-us/powershell/utility-modules/secretmanagement/how-to/manage-secretstore?view=ps-modules
+      # Use the SecretStore in automation - https://learn.microsoft.com/en-us/powershell/utility-modules/secretmanagement/how-to/using-secrets-in-automation?view=ps-modules
+
+
+      if ($null -eq (Get-SecretVault -Name $SecretVault -ErrorAction SilentlyContinue)) { 
+          Register-SecretVault -Name $SecretVault -ModuleName Microsoft.PowerShell.SecretStore -DefaultVault    
+      }
+
+      # Disable authentication to run on script
+      Reset-SecretStore -Authentication None -Interaction None -Force
+
+      Get-SecretVault -Name $SecretVault
+
+      Set-Secret -Name "MyCredential" -Secret $credentials -Vault $SecretVault
+
+      #endregion
+
+      #region 1.3 - Register PS Repository
+
+
+
+      #endregion
+
+      #region 2 - Publish
+
+      # 
+
+      # Unregister-PSRepository -Name "PowershellAzureDevopsServices" 
+
+      if ($null -eq (Get-PSRepository -Name $RepositoryName -ErrorAction SilentlyContinue)) { 
+          $repositoryParams = @{
+              Name               = $RepositoryName
+              SourceLocation     = $feedUrl
+              InstallationPolicy = 'Trusted'
+              Credential         = $credentials
+          }
+          
+          Register-PSRepository @repositoryParams
+      }
+
+      Publish-PSResource -Path $packagePath -Repository $publishFeed -Credential $credentials -ApiKey 123456
+
+      # Publish-ToAzureArtifactsPSRepo -Organization $organization  -Project $project -FeedName $publishFeed -RepositoryName $RepositoryName -Username $username -PatToken $patToken -PackagePath $packagePath -ApiKey $apiKey -SecretVault $SecretVault
 
   # - powershell: |
   #     Import-Module Microsoft.PowerShell.Security
