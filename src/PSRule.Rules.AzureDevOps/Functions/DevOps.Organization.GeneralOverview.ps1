@@ -3,7 +3,8 @@
     Retrieves Azure DevOps organization-level general overview settings.
 
     .DESCRIPTION
-    Queries the internal Azure DevOps organization overview endpoint to retrieve metadata including the description, timezone, region, geography, and organization owner.
+    Queries the internal Azure DevOps organization overview endpoint to retrieve metadata 
+    including the description, timezone, region, geography, and organization owner.
 
     .PARAMETER Organization
     The name of the Azure DevOps organization.
@@ -88,7 +89,10 @@ Export-ModuleMember -Function Read-AdoOrganizationGeneralOverview
     Exports Azure DevOps organization general overview settings to a JSON file or returns them as an object.
 
     .DESCRIPTION
-    The Export-AdoOrganizationGeneralOverview function retrieves general overview settings for a specified Azure DevOps organization using the provided access token. It formats the settings with metadata (e.g., ObjectType, ObjectName) and either saves them to a JSON file or returns them as an object, depending on the parameters provided. Requires a prior connection to Azure DevOps via Connect-AzDevOps.
+    The Export-AdoOrganizationGeneralOverview function retrieves general overview settings for a 
+    specified Azure DevOps organization using the provided access token. It formats the settings with metadata 
+    (e.g., ObjectType, ObjectName) and either saves them to a JSON file or returns them as an object, 
+    depending on the parameters provided. Requires a prior connection to Azure DevOps via Connect-AzDevOps.
 
     .PARAMETER Organization
     The name of the Azure DevOps organization whose general overview settings will be exported.
@@ -97,10 +101,12 @@ Export-ModuleMember -Function Read-AdoOrganizationGeneralOverview
     The Bearer token used for authenticating API requests to Azure DevOps.
 
     .PARAMETER OutputPath
-    The file path where the general overview settings will be saved as a JSON file. If not specified, the settings are not saved to a file. Mutually exclusive with -PassThru.
+    The file path where the general overview settings will be saved as a JSON file. 
+    If not specified, the settings are not saved to a file. Mutually exclusive with -PassThru.
 
     .PARAMETER PassThru
-    If specified, returns the general overview settings as a PowerShell object instead of saving to a file. Mutually exclusive with -OutputPath.
+    If specified, returns the general overview settings as a PowerShell object instead of saving to a file. 
+    Mutually exclusive with -OutputPath.
 
     .EXAMPLE
     Export-AdoOrganizationGeneralOverview -Organization "MyOrg" -AccessToken "abc123" -OutputPath "C:\Exports"

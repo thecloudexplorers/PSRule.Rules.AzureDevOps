@@ -126,7 +126,10 @@ Export-ModuleMember -Function Read-AdoOrganizationPipelinesSettings
         Exports Azure DevOps organization pipeline settings to a JSON file or returns them as an object.
 
     .DESCRIPTION
-        The Export-AdoOrganizationPipelinesSettings function retrieves pipeline settings for a specified Azure DevOps organization using the provided access token. It formats the settings with metadata (e.g., ObjectType, ObjectName) and either saves them to a JSON file or returns them as an object, depending on the parameters provided. Requires a prior connection to Azure DevOps via Connect-AzDevOps.
+        The Export-AdoOrganizationPipelinesSettings function retrieves pipeline settings for a specified 
+        Azure DevOps organization using the provided access token. It formats the settings with metadata 
+        (e.g., ObjectType, ObjectName) and either saves them to a JSON file or returns them as an object, 
+        depending on the parameters provided. Requires a prior connection to Azure DevOps via Connect-AzDevOps.
 
     .PARAMETER Organization
         The name of the Azure DevOps organization whose pipeline settings will be exported.
@@ -135,10 +138,11 @@ Export-ModuleMember -Function Read-AdoOrganizationPipelinesSettings
         The Bearer token used for authenticating API requests to Azure DevOps.
 
     .PARAMETER OutputPath
-        The file path where the pipeline settings will be saved as a JSON file. If not specified, the settings are not saved to a file. Mutually exclusive with -PassThru.
+        The file path where the pipeline settings will be saved as a JSON file. 
+        If not specified, the settings are not saved to a file. Mutually exclusive with -PassThru.
 
     .PARAMETER PassThru
-        If specified, returns the pipeline settings as a PowerShell object instead of saving to a file. Mutually exclusive with -OutputPath.
+        If specified, returns the pipeline settings as a PowerShell object instead of saving to a file.
 
     .EXAMPLE
         Export-AdoOrganizationPipelinesSettings -Organization "MyOrg" -AccessToken "abc123" -OutputPath "C:\Exports"
