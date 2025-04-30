@@ -28,6 +28,10 @@ steps:
       $feedUrl = "https://pkgs.dev.azure.com/$organization/$project/_packaging/$publishFeed/nuget/v2"
 
       # Package info
+
+      Get-ChildItem $(Build.ArtifactStagingDirectory) -Recurse
+
+
       $packagePath = "$(Build.ArtifactStagingDirectory)\src\PSRule.Rules.AzureDevOps"    
       $apiKey = "$(apiKey)"
 
