@@ -70,8 +70,8 @@ steps:
       Import-Module Microsoft.PowerShell.SecretStore
       Import-Module Microsoft.PowerShell.SecretManagement
 
-      # Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery
-      Install-Module -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force -ErrorAction Stop
+      # Install-Module Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Scope CurrentUser 
+      Install-Module -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force -Scope CurrentUser  -ErrorAction Stop
       Import-Module Microsoft.PowerShell.Security
       Import-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.1.1
 
