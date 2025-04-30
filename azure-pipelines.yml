@@ -29,7 +29,7 @@ steps:
 
       # Package info
 
-      Get-ChildItem $(Build.ArtifactStagingDirectory) -Recurse
+      Get-ChildItem "$(Build.ArtifactStagingDirectory)" -Recurse
 
 
       $packagePath = "$(Build.ArtifactStagingDirectory)\src\PSRule.Rules.AzureDevOps"    
