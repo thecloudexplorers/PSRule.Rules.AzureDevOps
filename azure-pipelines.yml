@@ -31,10 +31,10 @@ steps:
 
       Write-Host "Artifact directory:"
 
-      Get-ChildItem -Path "$(Build.ArtifactStagingDirectory)" -Recurse
+      Get-ChildItem -Path "$(Build.Repository.LocalPath)" -Recurse
 
 
-      $packagePath = "$(Build.ArtifactStagingDirectory)/src/PSRule.Rules.AzureDevOps/"    
+      $packagePath = "$(Build.Repository.LocalPath)/src/PSRule.Rules.AzureDevOps/"    
       $apiKey = "$(apiKey)"
 
       # Credentials to authenticate to AzDo
