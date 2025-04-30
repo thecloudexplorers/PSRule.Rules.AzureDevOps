@@ -29,11 +29,6 @@ steps:
 
       # Package info
 
-      Write-Host "Artifact directory:"
-
-      Get-ChildItem -Path "$(Build.Repository.LocalPath)" -Recurse
-
-
       $packagePath = "$(Build.Repository.LocalPath)/src/PSRule.Rules.AzureDevOps/"    
       $apiKey = "$(apiKey)"
 
@@ -71,6 +66,7 @@ steps:
 
       Install-Module -Name Microsoft.PowerShell.SecretStore -Repository PSGallery -Force
       Install-Module -Name Microsoft.PowerShell.SecretManagement -Repository PSGallery -Force
+      Install-PackageProvider NuGet -Scope CurrentUser -Force > $null
       Import-Module Microsoft.PowerShell.SecretStore
       Import-Module Microsoft.PowerShell.SecretManagement
 
@@ -99,7 +95,7 @@ steps:
       # Managing a SecretStore vault - https://learn.microsoft.com/en-us/powershell/utility-modules/secretmanagement/how-to/manage-secretstore?view=ps-modules
       # Use the SecretStore in automation - https://learn.microsoft.com/en-us/powershell/utility-modules/secretmanagement/how-to/using-secrets-in-automation?view=ps-modules
 
-      Install-PackageProvider NuGet -Scope CurrentUser -Force > $null
+
 
       if ($null -eq (Get-SecretVault -Name $SecretVault -ErrorAction SilentlyContinue)) { 
           Register-SecretVault -Name $SecretVault -ModuleName Microsoft.PowerShell.SecretStore -DefaultVault    
