@@ -39,6 +39,8 @@ steps:
 
       $SecretVault = "LocalVault"
 
+      Write-Host "Importing Modules..."
+
       Install-Module -Name Microsoft.PowerShell.SecretStore -Repository PSGallery -Force
       Install-Module -Name Microsoft.PowerShell.SecretManagement -Repository PSGallery -Force
       Import-Module Microsoft.PowerShell.SecretStore
@@ -52,6 +54,8 @@ steps:
 
       #region 1.1 - Create credential
 
+      Write-Host "Creating credentials..."
+
       $patToken = $patToken | ConvertTo-SecureString -AsPlainText -Force
       $credentials = New-Object System.Management.Automation.PSCredential($username, $patToken)
 
@@ -60,6 +64,8 @@ steps:
       #endregion
 
       #region 1.2 - Register Secret Vault
+
+      Write-Host "Registering Secret Vault..."
 
       # Managing a SecretStore vault - https://learn.microsoft.com/en-us/powershell/utility-modules/secretmanagement/how-to/manage-secretstore?view=ps-modules
       # Use the SecretStore in automation - https://learn.microsoft.com/en-us/powershell/utility-modules/secretmanagement/how-to/using-secrets-in-automation?view=ps-modules
@@ -73,6 +79,8 @@ steps:
       Reset-SecretStore -Authentication None -Interaction None -Force
 
       Get-SecretVault -Name $SecretVault
+
+      Write-Host "Setting secrets..."
 
       Set-Secret -Name "MyCredential" -Secret $credentials -Vault $SecretVault
 
@@ -90,7 +98,10 @@ steps:
 
       # Unregister-PSRepository -Name "PowershellAzureDevopsServices" 
 
+
+
       if ($null -eq (Get-PSRepository -Name $RepositoryName -ErrorAction SilentlyContinue)) { 
+          Write-Host "Registering PS Repository..."
           $repositoryParams = @{
               Name               = $RepositoryName
               SourceLocation     = $feedUrl
@@ -100,6 +111,8 @@ steps:
           
           Register-PSRepository @repositoryParams
       }
+
+      Write-Host "Publishing module to PS Repository..."
 
       Publish-PSResource -Path $packagePath -Repository $publishFeed -Credential $credentials -ApiKey 123456
 
