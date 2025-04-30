@@ -99,6 +99,7 @@ steps:
       # Managing a SecretStore vault - https://learn.microsoft.com/en-us/powershell/utility-modules/secretmanagement/how-to/manage-secretstore?view=ps-modules
       # Use the SecretStore in automation - https://learn.microsoft.com/en-us/powershell/utility-modules/secretmanagement/how-to/using-secrets-in-automation?view=ps-modules
 
+      Install-PackageProvider NuGet -Scope CurrentUser -Force > $null
 
       if ($null -eq (Get-SecretVault -Name $SecretVault -ErrorAction SilentlyContinue)) { 
           Register-SecretVault -Name $SecretVault -ModuleName Microsoft.PowerShell.SecretStore -DefaultVault    
