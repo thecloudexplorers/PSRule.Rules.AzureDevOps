@@ -20,20 +20,20 @@ steps:
       # . "$(Build.ArtifactStagingDirectory)\src\helper-functions\Publish-ToAzureArtifactsPSRepo.ps1"        
 
       # Publish info
-      $organization = $(AZDO-ORGANIZATION)
-      $project = $(project)
-      $publishFeed = $(publishFeed)
+      $organization = "$(AZDO-ORGANIZATION)"
+      $project = "$(project)"
+      $publishFeed = "$(publishFeed)"
 
 
       $feedUrl = "https://pkgs.dev.azure.com/$organization/$project/_packaging/$publishFeed/nuget/v2"
 
       # Package info
       $packagePath = "$(Build.ArtifactStagingDirectory)\src\PSRule.Rules.AzureDevOps"    
-      $apiKey = $(apiKey)
+      $apiKey = "$(apiKey)"
 
       # Credentials to authenticate to AzDo
-      $username = $(patUser)
-      $patToken = $(AZDO-PAT)
+      $username = "$(patUser)"
+      $patToken = "$(AZDO-PAT)"
 
 
 
