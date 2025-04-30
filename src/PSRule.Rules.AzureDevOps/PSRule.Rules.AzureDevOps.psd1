@@ -13,7 +13,7 @@
     RootModule        = 'PSRule.Rules.AzureDevOps.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.3.0'  # <- TCE = The Cloud Explorers
+    ModuleVersion     = '0.4.0'  # <- TCE = The Cloud Explorers
 
     # ID used to uniquely identify this module
     GUID              = '4d86d6fa-861b-4378-a6ce-b5be180f267e' # Generate a new GUID with [guid]::NewGuid()
