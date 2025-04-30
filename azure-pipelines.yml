@@ -36,6 +36,28 @@ steps:
       $patToken = "$(AZDO-PAT)"
 
 
+      $variables = @{
+          "organization" = $organization
+          "project"      = $project
+          "publishFeed"  = $publishFeed
+          "feedUrl"      = $feedUrl
+          "packagePath"  = $packagePath
+          "apiKey"       = $apiKey
+          "username"     = $username
+          "patToken"     = $patToken
+      }
+
+      $missing = $variables.GetEnumerator() | Where-Object {
+          -not $_.Value -or $_.Value -eq ''
+      }
+
+      if ($missing) {
+          Write-Host "The following variables are null or empty:`n"
+          $missing | ForEach-Object { Write-Host "- $($_.Key)" }
+          exit 1
+      } else {
+          Write-Host "All required variables are set."
+      }
 
       $SecretVault = "LocalVault"
 
