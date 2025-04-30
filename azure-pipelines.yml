@@ -75,6 +75,8 @@ steps:
       Import-Module Microsoft.PowerShell.Security
       Import-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.1.1
 
+      $env:PSModulePath -split ';'
+
       #endregion
 
       #region 1.1 - Create credential
