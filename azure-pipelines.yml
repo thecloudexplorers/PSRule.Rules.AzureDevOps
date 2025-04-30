@@ -83,7 +83,7 @@ steps:
 
       Write-Host "Setting secrets..."
 
-      # Set-Secret -Name "MyCredential" -Secret $credentials -Vault $SecretVault
+      Set-Secret -Name "MyCredential" -Secret $credentials -Vault $SecretVault
 
       #endregion
 
@@ -111,6 +111,12 @@ steps:
           }
           
           Register-PSRepository @repositoryParams
+
+          # Register-PSRepository -Name 'MyRepoName' 
+          # -SourceLocation 'https://pkgs.dev.azure.com/[MyOrganization]/_packaging/[MyFeed]/nuget/v2' 
+          # -InstallationPolicy Trusted -Credential $credential }
+
+
       }
 
       Write-Host "Publishing module to PS Repository..."
