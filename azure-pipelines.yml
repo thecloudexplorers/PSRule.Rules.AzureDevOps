@@ -83,7 +83,7 @@ steps:
 
       Write-Host "Setting secrets..."
 
-      Set-Secret -Name "MyCredential" -Secret $credentials -Vault $SecretVault
+      # Set-Secret -Name "MyCredential" -Secret $credentials -Vault $SecretVault
 
       #endregion
 
