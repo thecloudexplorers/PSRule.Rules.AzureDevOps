@@ -5,13 +5,13 @@ pool:
 
 variables:
   # Set to your variable group containing ADO_PAT
-  - group: 'ado-psrule-run'
+  - group: 'azdo-psrule-run'
   # Set to your Azure DevOps organization
   - name: devops_organization
-    value: 'cloudyspells'
+    value: 'tcsnlps'
   # Set to your Azure DevOps project
   - name: devops_project
-    value: 'psrule-fail-project'
+    value: 'ssc-set'
 
 schedules:
 - cron: "5 8 * * 0"
@@ -47,7 +47,7 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
-                Connect-AzDevOps -Organization $(devops_organization) -PAT "$(ADOPAT)"
+                Connect-AzDevOps -Organization $(AZDO-ORGANIZATION) -PAT "$(AZDO-PAT)"
                 Export-AzDevOpsRuleData `
                   -Project $(devops_project) `
                   -OutputPath .\Temp

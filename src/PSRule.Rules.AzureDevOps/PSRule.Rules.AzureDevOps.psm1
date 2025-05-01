@@ -14,6 +14,12 @@ Get-ChildItem -Path "$PSScriptRoot/Functions/*.ps1" | ForEach-Object {
     . $_.FullName
 }
 
+# Dot source all rule scripts
+Get-ChildItem -Path "$PSScriptRoot/*.Rule.ps1" | ForEach-Object {
+    Write-Verbose "Loading rule file: $_.FullName"
+    . $_.FullName
+}
+
 <#
     .SYNOPSIS
     Run all JSON export functions for Azure DevOps for analysis by PSRule
@@ -33,22 +39,41 @@ Get-ChildItem -Path "$PSScriptRoot/Functions/*.ps1" | ForEach-Object {
     .EXAMPLE
     Export-AzDevOpsRuleData -Project $Project -OutputPath $OutputPath
 #>
-Function Export-AzDevOpsRuleData {
+function Export-AzDevOpsRuleData {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
+        [string]
+        $Organization,
+
+        [Parameter(Mandatory = $true)]
+        [string]
+        $OrganizationId,
+
+        [Parameter(Mandatory = $true)]
         [string]
         $Project,
-        [Parameter(ParameterSetName = 'JsonFile')]
+
+        [Parameter(Mandatory = $true)]
         [string]
         $OutputPath,
+        
         [Parameter(ParameterSetName = 'PassThru')]
         [switch]
         $PassThru
     )
+
     if ($null -eq $script:connection) {
-        throw "Not connected to Azure DevOps. Run Connect-AzDevOps first"
+        throw 'Not connected to Azure DevOps. Run Connect-AzDevOps first.'
     }
+
+    if ($Organization -ne $script:connection.Organization) {
+        Write-Warning "Provided Organization ($Organization) differs from connected organization ($($script:connection.Organization)). Using connected organization."
+    }
+
+    $org = $script:connection.organization
+   
+
     if($PassThru) {
         Write-Verbose "Exporting rule data for project $Project to $OutputPath"
         Write-Verbose "Exporting project"
@@ -73,6 +98,14 @@ Function Export-AzDevOpsRuleData {
         # Export-AzDevOpsUsers -PassThru
         Write-Verbose "Exporting retention settings"
         Export-AzDevOpsRetentionSettings -Project $Project -PassThru
+        Write-Verbose "Exporting OrganizationPipelines settings"
+        Export-AdoOrganizationPipelinesSettings -Organization $Organization -PassThru
+        Write-Verbose "Exporting Organization General Overview"
+        Export-AdoOrganizationGeneralOverview -Organization $Organization -PassThru
+        Write-Verbose "Exporting Organization General Billing Settings"
+        Export-AdoOrganizationGeneralBillingSettings -Organization $Organization -PassThru
+        Write-Verbose "Exporting Organization Security Policies"
+        Export-AdoOrganizationSecurityPolicies -Organization $Organization -PassThru
     } else {
         Write-Verbose "Exporting rule data for project $Project to $OutputPath"
         Write-Verbose "Exporting project"
@@ -97,8 +130,17 @@ Function Export-AzDevOpsRuleData {
         # Export-AzDevOpsUsers -OutputPath $OutputPath
         Write-Verbose "Exporting retention settings"
         Export-AzDevOpsRetentionSettings -Project $Project -OutputPath $OutputPath
+        Write-Verbose "Exporting OrganizationPipelines settings"
+        Export-AdoOrganizationPipelinesSettings -Organization $Organization -OutputPath $OutputPath
+        Write-Verbose "Exporting Organization General Overview"
+        Export-AdoOrganizationGeneralOverview -Organization $Organization -OutputPath $OutputPath
+        Write-Verbose "Exporting Organization General Billing Settings"
+        Export-AdoOrganizationGeneralBillingSettings -Organization $Organization -OutputPath $OutputPath
+        Write-Verbose "Exporting Organization Security Policies"
+        Export-AdoOrganizationSecurityPolicies -Organization $Organization -OutputPath $OutputPath
     }
 }
+
 Export-ModuleMember -Function Export-AzDevOpsRuleData -Alias Export-AzDevOpsProjectRuleData
 # End of Function Export-AzDevOpsRuleData
 
