@@ -18,7 +18,7 @@
     The name of the worksheet in the Excel file.
 
     .PARAMETER BaseDirectory
-    The directory where the Excel file will be saved. Defaults to "C:\Temp".
+    The directory where the Excel file will be saved.
 
     .EXAMPLE
     Export-ToExcel -Report $reportData -ExportFileName "Report.xlsx" -WorksheetName "ReportData" -BaseDirectory "C:\Reports"
@@ -35,8 +35,8 @@ function Export-ToExcel {
         [Parameter(Mandatory)]
         [System.String] $WorksheetName,
 
-        [Parameter()]
-        [System.String] $BaseDirectory = "C:\Temp"
+        [Parameter(Mandatory)]
+        [System.String] $BaseDirectory
     )
 
     # Construct the full export path
@@ -59,7 +59,7 @@ function Export-ToExcel {
     try {
         # Ensure output directory exists
         if (-not (Test-Path -Path $BaseDirectory)) {
-            New-Item -Path $BaseDirectory -ItemType Directory -Force | Out-Null
+            New-Item -Path $BaseDirectory -ItemType Directory -Force > $null
             Write-Host "Created directory: [$BaseDirectory]" -ForegroundColor Green
         }
 
