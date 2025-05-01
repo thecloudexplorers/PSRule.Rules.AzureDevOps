@@ -5,7 +5,7 @@
     Reports on branches per repository in Azure DevOps, identifying stale branches.
 
     .DESCRIPTION
-    Collects branch details including last commit date, stale status, and last commit ID, 
+    Collects branch details including last commit date, stale status, and last commit ID,
     then exports the results to an Excel file.
 
     .PARAMETER Organization
@@ -136,7 +136,7 @@ foreach ($project in $projects) {
                     [System.String] $commitUri = "https://dev.azure.com/${Organization}/${projectName}/_apis/git/repositories/${repositoryId}/commits/${lastCommitId}?api-version=7.1-preview.1"
                     $commitResponse = Invoke-RestMethod -Uri $commitUri -Headers $headers -Method Get
                     Write-Debug "Commit response for [$branchName] in [$repositoryName]: [$($commitResponse | ConvertTo-Json -Depth 5)]"
-                    
+
                     if ($commitResponse.committer -and $commitResponse.committer.date) {
                         # Calculate stale status based on commit date
                         [System.DateTime] $lastCommitDateObj = [datetime] $commitResponse.committer.date

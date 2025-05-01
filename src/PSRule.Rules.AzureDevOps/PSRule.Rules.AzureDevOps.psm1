@@ -94,6 +94,8 @@ function Export-AzDevOpsRuleData {
         Export-AzDevOpsReleaseDefinitions -Project $Project -PassThru
         Write-Verbose "Exporting groups"
         Export-AzDevOpsGroups -Project $Project -PassThru
+        # Write-Verbose "Exporting users"
+        # Export-AzDevOpsUsers -PassThru
         Write-Verbose "Exporting retention settings"
         Export-AzDevOpsRetentionSettings -Project $Project -PassThru
         Write-Verbose "Exporting OrganizationPipelines settings"
@@ -124,6 +126,8 @@ function Export-AzDevOpsRuleData {
         Export-AzDevOpsReleaseDefinitions -Project $Project -OutputPath $OutputPath
         Write-Verbose "Exporting groups"
         Export-AzDevOpsGroups -Project $Project -OutputPath $OutputPath
+        # Write-Verbose "Exporting users"
+        # Export-AzDevOpsUsers -OutputPath $OutputPath
         Write-Verbose "Exporting retention settings"
         Export-AzDevOpsRetentionSettings -Project $Project -OutputPath $OutputPath
         Write-Verbose "Exporting OrganizationPipelines settings"

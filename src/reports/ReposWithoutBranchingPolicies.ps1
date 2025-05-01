@@ -5,7 +5,7 @@
     Reports on repositories without branch policies.
 
     .DESCRIPTION
-    Identifies Git repositories across all projects in the specified Azure DevOps organization that 
+    Identifies Git repositories across all projects in the specified Azure DevOps organization that
     lack branch policies on their default branches and exports the results to an Excel file.
 
     .PARAMETER Organization
@@ -115,7 +115,7 @@ foreach ($project in $projects) {
         }
 
         # Add repository details to report
-        $report += [PSCustomObject]@{ 
+        $report += [PSCustomObject]@{
             Project        = $projectName
             RepoName       = $repoName
             DefaultBranch  = $defaultBranch
@@ -127,7 +127,7 @@ foreach ($project in $projects) {
 # Exit if no repositories found
 if ($report.Count -eq 0) {
     Write-Host "[No repositories found.]" -ForegroundColor Yellow
-    exit 
+    exit
 }
 
 # Call the export function

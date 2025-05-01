@@ -5,7 +5,7 @@
     Exports a report to an Excel file with predefined formatting.
 
     .DESCRIPTION
-    Exports the provided report data to an Excel file in the specified directory with formatting options 
+    Exports the provided report data to an Excel file in the specified directory with formatting options
     such as autosizing columns, freezing the top row, and bolding the top row.
 
     .PARAMETER Report
