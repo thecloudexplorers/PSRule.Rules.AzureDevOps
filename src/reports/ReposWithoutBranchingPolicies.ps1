@@ -83,11 +83,7 @@ foreach ($project in $projects) {
     # Process each repository
     foreach ($repository in $repositories) {
         [System.String] $repoName = $repository.name
-        [System.String] $defaultBranch = if ($repository.defaultBranch) { 
-            $repository.defaultBranch -replace "refs/heads/", ""
-        } else { 
-            "Not Set"
-        }
+        [System.String] $defaultBranch = $repository.defaultBranch ? ($repository.defaultBranch -replace 'refs/heads/', '') : 'Not Set'
 
         # Fetch branch policies for the repository
         [System.Boolean]$hasPoliciesOnDefaultBranch = $false
@@ -123,7 +119,7 @@ foreach ($project in $projects) {
             Project        = $projectName
             RepoName       = $repoName
             DefaultBranch  = $defaultBranch
-            HasPolicies    = if ($hasPoliciesOnDefaultBranch) { "Yes" } else { "No" }
+            HasPolicies = $hasPoliciesOnDefaultBranch ? "Yes" : "No"
         }
     }
 }

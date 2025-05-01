@@ -112,7 +112,7 @@ foreach ($project in $projects) {
             Write-Warning "No main or master branch found in [$repositoryName]. Skipping merge checks."
             continue
         }
-        [System.String]$mainCommitId = $mainBranch.commit.commitId
+        [System.String] $mainCommitId = $mainBranch.commit.commitId
 
         # Process each branch for merge status
         foreach ($branch in $branches) {
@@ -136,7 +136,7 @@ foreach ($project in $projects) {
                         $commitResponse = Invoke-RestMethod -Uri $commitUri -Headers $headers -Method Get
                         # Check if branch commit is in main's history
                         $isMerged = $commitResponse.value | Where-Object { $_.commitId -eq $branchCommitId }
-                        $mergeStatus = if ($isMerged) { "Merged" } else { "Not Merged" }
+                        $mergeStatus = $isMerged ? "Merged" : "Not Merged"
                         # Log debug if no commits returned
                         if (-not $commitResponse.value) {
                             Write-Debug "No commits returned for [$branchName] vs [$mainBranchName] in [$repositoryName]."
