@@ -49,7 +49,7 @@ try {
     [System.String] $projectsUri = "https://dev.azure.com/$Organization/_apis/projects?api-version=7.1-preview.4"
     $projectsResponse = Invoke-RestMethod -Uri $projectsUri -Headers $headers -Method Get
     # Extract project list
-    $projects = $projectsResponse.value  
+    $projects = $projectsResponse.value
     Write-Host "Found [$($projects.Count)] projects." -ForegroundColor Cyan
 } catch {
     Write-Error "Failed to fetch projects: [$($_.Exception.Message)]"
@@ -112,7 +112,7 @@ foreach ($project in $projects) {
             Write-Warning "No main or master branch found in [$repositoryName]. Skipping merge checks."
             continue
         }
-        [System.String]$mainCommitId = $mainBranch.commit.commitId
+        [System.String] $mainCommitId = $mainBranch.commit.commitId
 
         # Process each branch for merge status
         foreach ($branch in $branches) {
@@ -121,7 +121,7 @@ foreach ($project in $projects) {
             [System.String] $mergeStatus = "Unknown"
             # Handle main/master branch
             if ($branchName -eq $mainBranchName) {
-                $mergeStatus = "Main Branch"  
+                $mergeStatus = "Main Branch"
             } else {
                 # Get branch commit ID
                 [System.String] $branchCommitId = $branch.commit.commitId
@@ -136,7 +136,7 @@ foreach ($project in $projects) {
                         $commitResponse = Invoke-RestMethod -Uri $commitUri -Headers $headers -Method Get
                         # Check if branch commit is in main's history
                         $isMerged = $commitResponse.value | Where-Object { $_.commitId -eq $branchCommitId }
-                        $mergeStatus = if ($isMerged) { "Merged" } else { "Not Merged" }
+                        $mergeStatus = $isMerged ? "Merged" : "Not Merged"
                         # Log debug if no commits returned
                         if (-not $commitResponse.value) {
                             Write-Debug "No commits returned for [$branchName] vs [$mainBranchName] in [$repositoryName]."
@@ -151,10 +151,10 @@ foreach ($project in $projects) {
 
             # Add branch data to report
             $report += [PSCustomObject]@{
-                ProjectName    = $project.name        
+                ProjectName    = $project.name
                 RepositoryName = $repositoryName
-                BranchName     = $branchName          
-                MergeStatus    = $mergeStatus         
+                BranchName     = $branchName
+                MergeStatus    = $mergeStatus
             }
         }
     }

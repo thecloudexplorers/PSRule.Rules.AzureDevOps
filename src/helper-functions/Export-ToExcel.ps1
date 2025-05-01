@@ -5,20 +5,23 @@
     Exports a report to an Excel file with predefined formatting.
 
     .DESCRIPTION
-    Exports the provided report data to an Excel file in the C:\Temp directory with formatting options 
+    Exports the provided report data to an Excel file in the specified directory with formatting options
     such as autosizing columns, freezing the top row, and bolding the top row.
 
     .PARAMETER Report
     The data to export to Excel, typically an array of PSObjects.
 
     .PARAMETER ExportFileName
-    The name of the Excel file (e.g., "Report.xlsx"). The file will be saved in C:\Temp.
+    The name of the Excel file (e.g., "Report.xlsx"). The file will be saved in the specified BaseDirectory.
 
     .PARAMETER WorksheetName
     The name of the worksheet in the Excel file.
 
+    .PARAMETER BaseDirectory
+    The directory where the Excel file will be saved.
+
     .EXAMPLE
-    Export-ToExcel -Report $reportData -ExportFileName "Report.xlsx" -WorksheetName "ReportData"
+    Export-ToExcel -Report $reportData -ExportFileName "Report.xlsx" -WorksheetName "ReportData" -BaseDirectory "C:\Reports"
 #>
 
 function Export-ToExcel {
@@ -30,17 +33,18 @@ function Export-ToExcel {
         [System.String] $ExportFileName,
 
         [Parameter(Mandatory)]
-        [System.String] $WorksheetName
+        [System.String] $WorksheetName,
+
+        [Parameter(Mandatory)]
+        [System.String] $BaseDirectory
     )
 
-    # Define the base directory for all exports
-    [System.String] $baseDirectory = "C:\Temp"
     # Construct the full export path
-    [System.String] $exportPath = Join-Path -Path $baseDirectory -ChildPath $ExportFileName
+    [System.String] $exportPath = Join-Path -Path $BaseDirectory -ChildPath $ExportFileName
 
     # Verify output directory
-    if (-not (Test-Path -Path $baseDirectory)) {
-        Write-Host "Directory [$baseDirectory] does not exist. It will be created during export." -ForegroundColor Yellow
+    if (-not (Test-Path -Path $BaseDirectory)) {
+        Write-Host "Directory [$BaseDirectory] does not exist. It will be created during export." -ForegroundColor Yellow
     }
 
     # Define Excel export parameters
@@ -54,9 +58,9 @@ function Export-ToExcel {
 
     try {
         # Ensure output directory exists
-        if (-not (Test-Path -Path $baseDirectory)) {
-            New-Item -Path $baseDirectory -ItemType Directory -Force | Out-Null
-            Write-Host "Created directory: [$baseDirectory]" -ForegroundColor Green
+        if (-not (Test-Path -Path $BaseDirectory)) {
+            New-Item -Path $BaseDirectory -ItemType Directory -Force > $null
+            Write-Host "Created directory: [$BaseDirectory]" -ForegroundColor Green
         }
 
         # Export data to Excel
