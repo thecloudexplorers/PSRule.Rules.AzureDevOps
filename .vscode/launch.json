@@ -16,14 +16,16 @@
       "type": "PowerShell",
       "request": "launch",
       "script": "${workspaceFolder}/.vscode/Bootstrap-Profile.ps1",
-      "args": []
+      "args": [],
+      "cwd": "${cwd}"
     },
     {
       "name": "Publish: PSRule.Rules.AzureDevOps",
       "type": "PowerShell",
       "request": "launch",
       "script": "${workspaceFolder}/.vscode/Execute-Publish-PSRule.ps1",
-      "args": ["${workspaceFolder}"]
+      "args": ["${workspaceFolder}"],
+      "cwd": "${cwd}"
     }
     // {
     //   "name": "Run: PSRule.Rules.AzureDevOps",

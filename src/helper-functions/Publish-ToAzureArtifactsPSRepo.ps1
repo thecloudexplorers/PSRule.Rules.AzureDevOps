@@ -43,52 +43,56 @@
         Version: 1.1
         Reference: https://learn.microsoft.com/en-us/azure/devops/artifacts/tutorials/private-powershell-library
     #>
-
-function Publish-ToAzureArtifactsPSRepo {
+    
+    function Publish-ToAzureArtifactsPSRepo {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
         [string]$Organization,
+
         [Parameter(Mandatory)]
         [string]$Project,
+
         [Parameter(Mandatory)]
         [string]$FeedName,
+
         [Parameter(Mandatory)]
         [string]$RepositoryName,
+
         [Parameter(Mandatory)]
         [string]$Username,
+
         [Parameter(Mandatory)]
         [string]$PatToken,
+
         [Parameter(Mandatory)]
         [string]$PackagePath,
+
         [Parameter(Mandatory)]
         [string]$ApiKey
     )
-    
+
     try {
-        $SecretVault = "LocalVault"
-    
+        # Ensure TLS 1.2 for secure connection
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+        # Build feed URL (NuGet v3 for PSResourceGet)
         $feedUrl = "https://pkgs.dev.azure.com/$Organization/$Project/_packaging/$FeedName/nuget/v3/index.json"
-        $secureToken = $PatToken | ConvertTo-SecureString -AsPlainText -Force
-        $credential = [PSCredential]::new($Username, $secureToken)
-    
-        if (-not (Get-SecretVault -Name $SecretVault -ErrorAction SilentlyContinue)) {
-            Register-SecretVault -Name $SecretVault -ModuleName Microsoft.PowerShell.SecretStore -DefaultVault
-        }
-    
-        Reset-SecretStore -Authentication None -Interaction None -Force
-        Set-Secret -Name "MyCredential" -Secret $credential -Vault $SecretVault
-    
-        #TODO: Add PSResourceRepository and check if needed Register-PSRepository us still needed
+
+        # Convert PAT to secure credential
+        $secureToken = ConvertTo-SecureString $PatToken -AsPlainText -Force
+        $credential = New-Object System.Management.Automation.PSCredential($Username, $secureToken)
+
+        # Register the repository if not already registered
         if (-not (Get-PSResourceRepository -Name $FeedName -ErrorAction SilentlyContinue)) {
-            Register-PSResourceRepository -Name $FeedName -Uri $feedUrl          
-        }       
-    
-        Write-Host "Publishing package from: $PackagePath" -ForegroundColor Cyan
-        Publish-PSResource -Path $PackagePath -Repository $FeedName -Credential $credential -ApiKey $ApiKey
+            Register-PSResourceRepository -Name $FeedName -Uri $feedUrl -Trusted
+        }
+
+        # Publish the module
+        Write-Host "Publishing module to: [$FeedName]" -ForegroundColor Cyan
+        Publish-PSResource -Path $PackagePath -Repository $FeedName -ApiKey $ApiKey -Credential $credential
     }
     catch {
         Write-Error "❌ Error occurred: $_"
     }
 }
-    

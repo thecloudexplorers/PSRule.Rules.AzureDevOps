@@ -1,11 +1,8 @@
 param (
-    [string]$WorkspaceDir
+    [string]$RepositoryRoot
 )
 
 Write-Host "Installing and importing required modules..." -ForegroundColor Cyan
-Install-Module -Name Microsoft.PowerShell.SecretStore -Repository PSGallery -Force -ErrorAction Stop
-Install-Module -Name Microsoft.PowerShell.SecretManagement -Repository PSGallery -Force -ErrorAction Stop
-Install-Module -Name Microsoft.PowerShell.PSResourceGet -Repository PSGallery -Force -ErrorAction Stop
 Import-Module Microsoft.PowerShell.SecretStore
 Import-Module Microsoft.PowerShell.SecretManagement
 Import-Module Microsoft.PowerShell.PSResourceGet -RequiredVersion 1.1.1
@@ -25,24 +22,25 @@ $requiredEnvVars = @(
 # Check for missing variables
 $missing = @()
 foreach ($var in $requiredEnvVars) {
-    if (-not (Test-Path Env:$var)) {
+    Write-Host "Checking env var: [$var]"
+    if (-not (Test-Path Env:$var)) {        
         $missing += $var
     }
 }
 
 if ($missing.Count -gt 0) {
-    Write-Error "❌ Missing required environment variables:`n - $($missing -join "`n - ")"
+    Write-Error "Missing required environment variables:`n - $($missing -join "`n - ")"
     exit 1
 }
 
 # Optional debug output
-Write-Host "📁 Workspace directory: $WorkspaceDir"
+Write-Host "Repository directory: $RepositoryRoot"
 
 # Import and run the target script
-$PublishScript = Join-Path $WorkspaceDir "src/helper-functions/Publish-ToAzureArtifactsPSRepo.ps1"
+$PublishScript = Join-Path $RepositoryRoot "src/helper-functions/Publish-ToAzureArtifactsPSRepo.ps1"
 
 if (-not (Test-Path $PublishScript)) {
-    throw "❌ Could not find publish script at: $PublishScript"
+    throw "Could not find publish script at: $PublishScript"
 }
 
 . $PublishScript
