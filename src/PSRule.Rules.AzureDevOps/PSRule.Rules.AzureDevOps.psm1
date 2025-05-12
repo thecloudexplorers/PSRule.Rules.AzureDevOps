@@ -147,8 +147,14 @@ Export-ModuleMember -Function Export-AzDevOpsRuleData -Alias Export-AzDevOpsProj
     .PARAMETER OutputPath
     Output path for JSON files
 
+    .PARAMETER Organization
+    Azure DevOps Organization Name. URL Format is not required.
+
+    .PARAMETER OrganizationId
+    Azure DevOps Organization ID, in guid format. 
+
     .EXAMPLE
-    Export-AzDevOpsOrganizationRuleData -OutputPath $OutputPath
+    Export-AzDevOpsOrganizationRuleData -Organization "MyOrg" -OrganizationId "7f3b2c1d-3ddb-4e8f-820d-f2913f4e8673" -OutputPath $OutputPath
 #>
 Function Export-AzDevOpsOrganizationRuleData {
     [CmdletBinding()]
