@@ -71,73 +71,53 @@ function Export-AzDevOpsRuleData {
         Write-Warning "Provided Organization ($Organization) differs from connected organization ($($script:connection.Organization)). Using connected organization."
     }
 
-    $org = $script:connection.organization
-   
+    $Organization = $script:connection.Organization
+    $AccessToken = $script:connection.Token
+    $OrganizationId = $script:connection.OrganizationId
 
-    if($PassThru) {
-        Write-Verbose "Exporting rule data for project $Project to $OutputPath"
-        Write-Verbose "Exporting project"
-        Export-AzDevOpsProject -Project $Project -PassThru
-        Write-Verbose "Exporting repos and branch policies"
-        Export-AzDevOpsReposAndBranchPolicies -Project $Project -PassThru
-        Write-Verbose "Exporting environment checks"
-        Export-AzDevOpsEnvironmentChecks -Project $Project -PassThru
-        Write-Verbose "Exporting service connections"
-        Export-AzDevOpsServiceConnections -Project $Project -PassThru
-        Write-Verbose "Exporting pipelines"
-        Export-AzDevOpsPipelines -Project $Project -PassThru
-        Write-Verbose "Exporting pipelines settings"
-        Export-AzDevOpsPipelinesSettings -Project $Project -PassThru
-        Write-Verbose "Exporting variable groups"
-        Export-AzDevOpsVariableGroups -Project $Project -PassThru
-        Write-Verbose "Exporting release definitions"
-        Export-AzDevOpsReleaseDefinitions -Project $Project -PassThru
-        Write-Verbose "Exporting groups"
-        Export-AzDevOpsGroups -Project $Project -PassThru
-        # Write-Verbose "Exporting users"
-        # Export-AzDevOpsUsers -PassThru
-        Write-Verbose "Exporting retention settings"
-        Export-AzDevOpsRetentionSettings -Project $Project -PassThru
-        Write-Verbose "Exporting OrganizationPipelines settings"
-        Export-AdoOrganizationPipelinesSettings -Organization $Organization -PassThru
-        Write-Verbose "Exporting Organization General Overview"
-        Export-AdoOrganizationGeneralOverview -Organization $Organization -PassThru
-        Write-Verbose "Exporting Organization General Billing Settings"
-        Export-AdoOrganizationGeneralBillingSettings -Organization $Organization -PassThru
-        Write-Verbose "Exporting Organization Security Policies"
-        Export-AdoOrganizationSecurityPolicies -Organization $Organization -PassThru
-    } else {
-        Write-Verbose "Exporting rule data for project $Project to $OutputPath"
-        Write-Verbose "Exporting project"
-        Export-AzDevOpsProject -Project $Project -OutputPath $OutputPath
-        Write-Verbose "Exporting repos and branch policies"
-        Export-AzDevOpsReposAndBranchPolicies -Project $Project -OutputPath $OutputPath
-        Write-Verbose "Exporting environment checks"
-        Export-AzDevOpsEnvironmentChecks -Project $Project -OutputPath $OutputPath
-        Write-Verbose "Exporting service connections"
-        Export-AzDevOpsServiceConnections -Project $Project -OutputPath $OutputPath
-        Write-Verbose "Exporting pipelines"
-        Export-AzDevOpsPipelines -Project $Project -OutputPath $OutputPath
-        Write-Verbose "Exporting pipelines settings"
-        Export-AzDevOpsPipelinesSettings -Project $Project -OutputPath $OutputPath
-        Write-Verbose "Exporting variable groups"
-        Export-AzDevOpsVariableGroups -Project $Project -OutputPath $OutputPath
-        Write-Verbose "Exporting release definitions"
-        Export-AzDevOpsReleaseDefinitions -Project $Project -OutputPath $OutputPath
-        Write-Verbose "Exporting groups"
-        Export-AzDevOpsGroups -Project $Project -OutputPath $OutputPath
-        # Write-Verbose "Exporting users"
-        # Export-AzDevOpsUsers -OutputPath $OutputPath
-        Write-Verbose "Exporting retention settings"
-        Export-AzDevOpsRetentionSettings -Project $Project -OutputPath $OutputPath
-        Write-Verbose "Exporting OrganizationPipelines settings"
-        Export-AdoOrganizationPipelinesSettings -Organization $Organization -OutputPath $OutputPath
-        Write-Verbose "Exporting Organization General Overview"
-        Export-AdoOrganizationGeneralOverview -Organization $Organization -OutputPath $OutputPath
-        Write-Verbose "Exporting Organization General Billing Settings"
-        Export-AdoOrganizationGeneralBillingSettings -Organization $Organization -OutputPath $OutputPath
-        Write-Verbose "Exporting Organization Security Policies"
-        Export-AdoOrganizationSecurityPolicies -Organization $Organization -OutputPath $OutputPath
+    Write-Host "Exporting rule data for project [$Project] to [$OutputPath]" -ForegroundColor Green
+
+    
+    $exportCommands = @(
+        @{ Name = 'Export-AzDevOpsProject'; Params = @{ Project = $Project }; Message = "[$Project] Exporting project" },
+        @{ Name = 'Export-AzDevOpsReposAndBranchPolicies'; Params = @{ Project = $Project }; Message = "[$Project] Exporting repos and branch policies" },
+        @{ Name = 'Export-AzDevOpsEnvironmentChecks'; Params = @{ Project = $Project }; Message = "[$Project] Exporting environment checks" },
+        @{ Name = 'Export-AzDevOpsServiceConnections'; Params = @{ Project = $Project }; Message = "[$Project] Exporting service connections" },
+        @{ Name = 'Export-AzDevOpsPipelines'; Params = @{ Project = $Project }; Message = "[$Project] Exporting pipelines" },
+        @{ Name = 'Export-AzDevOpsPipelinesSettings'; Params = @{ Project = $Project }; Message = "[$Project] Exporting pipelines settings" },
+        @{ Name = 'Export-AzDevOpsVariableGroups'; Params = @{ Project = $Project }; Message = "[$Project] Exporting variable groups" },
+        @{ Name = 'Export-AzDevOpsReleaseDefinitions'; Params = @{ Project = $Project }; Message = "[$Project] Exporting release definitions" },
+        @{ Name = 'Export-AzDevOpsGroups'; Params = @{ Project = $Project }; Message = "[$Project] Exporting groups" },        
+        @{ Name = 'Export-AzDevOpsRetentionSettings'; Params = @{ Project = $Project }; Message = "[$Project] Exporting retention settings" },
+        @{ Name = 'Export-AdoOrganizationPipelinesSettings'; Params = @{ Organization = $Organization }; Message = "[$Project] Exporting organization pipelines settings" },
+        @{ Name = 'Export-AdoOrganizationGeneralOverview'; Params = @{ Organization = $Organization; AccessToken = $AccessToken }; Message = "[$Project] Exporting organization general overview" },
+        @{ Name = 'Export-AdoOrganizationGeneralBillingSettings'; Params = @{ Organization = $Organization; OrganizationId = $OrganizationId; AccessToken = $AccessToken }; Message = "[$Project] Exporting organization billing settings" },
+        @{ Name = 'Export-AdoOrganizationSecurityPolicies'; Params = @{ Organization = $Organization; AccessToken = $AccessToken }; Message = "[$Project] Exporting organization security policies" }
+        # @{ Name = 'Export-AzDevOpsUsers'; Params = @{ Project = $Project }; Message = "Exporting users" },
+    )
+    
+    $commonParams = if ($PassThru) {
+        @{ PassThru = $true } 
+    }
+    else {
+        @{ OutputPath = $OutputPath } 
+    }
+
+    foreach ($export in $exportCommands) {
+        Write-Host $export.Message -ForegroundColor Blue
+
+        # assemble splat from Params + commonParams
+        $splat = @{}
+        $splat += $export.Params
+        $splat += $commonParams
+
+        # attempt the export; on error, log and continue
+        try {
+            & $export.Name @splat -ErrorAction Stop
+        }
+        catch {
+            Write-Warning "Failed to $($export.Message): $($_.Exception.Message)"
+        }
     }
 }
 
@@ -169,7 +149,7 @@ Function Export-AzDevOpsOrganizationRuleData {
         $project = $_
         # Create a subfolder for each project
         $subPath = "$($OutputPath)\$($project.name)"
-        if(!(Test-Path -Path $subPath)) {
+        if (!(Test-Path -Path $subPath)) {
             New-Item -Path $subPath -ItemType Directory
         }
         Export-AzDevOpsRuleData -Project $project.name -OutputPath $subPath
@@ -184,7 +164,7 @@ Export-ModuleMember -Function Connect-AzDevOps
 Export-ModuleMember -Function Disconnect-AzDevOps
 
 # Define the types to export with type accelerators.
-$ExportableTypes =@(
+$ExportableTypes = @(
     [AzureDevOpsConnection]
 )
 # Get the internal TypeAccelerators class to use its static methods.
@@ -215,7 +195,7 @@ foreach ($Type in $ExportableTypes) {
 }
 # Remove type accelerators when the module is removed.
 $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
-    foreach($Type in $ExportableTypes) {
+    foreach ($Type in $ExportableTypes) {
         $TypeAcceleratorsClass::Remove($Type.FullName) | Out-Null
     }
 }.GetNewClosure()
