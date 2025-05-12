@@ -130,7 +130,7 @@ function Export-AzDevOpsRuleData {
         }
     }
     else {
-        Write-Host "All commands where exported successfully!" -ForegroundColor Green
+        Write-Host "[$($export.Name)] All commands where exported successfully!" -ForegroundColor Green
     }
 }
 
@@ -153,6 +153,10 @@ Export-ModuleMember -Function Export-AzDevOpsRuleData -Alias Export-AzDevOpsProj
 Function Export-AzDevOpsOrganizationRuleData {
     [CmdletBinding()]
     param (
+        [Parameter(Mandatory = $true)]
+        [string] $Organization,
+        [Parameter(Mandatory = $true)]
+        [string] $OrganizationId,
         [Parameter(Mandatory)]
         [string]
         $OutputPath
@@ -165,7 +169,7 @@ Function Export-AzDevOpsOrganizationRuleData {
         if (!(Test-Path -Path $subPath)) {
             New-Item -Path $subPath -ItemType Directory
         }
-        Export-AzDevOpsRuleData -Project $project.name -OutputPath $subPath
+        Export-AzDevOpsRuleData -Organization $Organization -OrganizationId $OrganizationId -Project $project.name -OutputPath $subPath
     }
 }
 Export-ModuleMember -Function Export-AzDevOpsOrganizationRuleData
