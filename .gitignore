@@ -2,5 +2,4 @@
 tests/out*
 coverage.xml
 myenv.ps1
-.vscode/
 .report/
