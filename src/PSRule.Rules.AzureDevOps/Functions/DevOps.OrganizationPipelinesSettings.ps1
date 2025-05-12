@@ -33,7 +33,7 @@ function Read-AdoOrganizationPipelinesSettings {
 
     # Set headers for authentication
     $headers = @{
-        Authorization  = "Bearer $AccessToken"
+        Authorization  = $AccessToken
         "Content-Type" = "application/json"
     }
 
@@ -161,93 +161,93 @@ Export-ModuleMember -Function Read-AdoOrganizationPipelinesSettings
         https://docs.microsoft.com/en-us/rest/api/azure/devops/
     #>
 
-    function Export-AdoOrganizationPipelinesSettings {
-        [CmdletBinding()]
-        param (
-            [Parameter(Mandatory = $true)]
-            [string]
-            $Organization,
+function Export-AdoOrganizationPipelinesSettings {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]
+        $Organization,
     
-            [Parameter(Mandatory = $true)]
-            [string]
-            $AccessToken,
+        [Parameter(Mandatory = $true)]
+        [string]
+        $AccessToken,
     
-            [Parameter(ParameterSetName = 'JsonFile')]
-            [string]
-            $OutputPath,
+        [Parameter(ParameterSetName = 'JsonFile')]
+        [string]
+        $OutputPath,
     
-            [Parameter(ParameterSetName = 'PassThru')]
-            [switch]
-            $PassThru
-        )
+        [Parameter(ParameterSetName = 'PassThru')]
+        [switch]
+        $PassThru
+    )
     
-        # Check for active connection
-        if ($null -eq $script:connection) {
-            throw 'Not connected to Azure DevOps. Run Connect-AzDevOps first.'
-        }
-    
-        # Retrieve pipeline settings
-        try {
-            $settings = Read-AdoOrganizationPipelinesSettings -Organization $Organization -AccessToken $AccessToken
-            if ($null -eq $settings) {
-                throw "No Organization pipeline settings returned from Read-AdoOrganizationPipelinesSettings."
-            }
-        }
-        catch {
-            throw "Failed to get Organization pipeline settings from Azure DevOps: $($_.Exception.Message)"
-        }
-    
-        # Process settings into exportable format
-        $settingsDetails = @()
-        $settingsObject = [PSCustomObject]@{
-            statusBadgesArePrivate                    = $settings.statusBadgesArePrivate
-            enforceSettableVar                        = $settings.enforceSettableVar
-            enforceJobAuthScope                       = $settings.enforceJobAuthScope
-            enforceJobAuthScopeForReleases            = $settings.enforceJobAuthScopeForReleases
-            enforceReferencedRepoScopedToken          = $settings.enforceReferencedRepoScopedToken
-            disableStageChooser                       = $settings.disableStageChooser
-            disableClassicBuildPipelineCreation       = $settings.disableClassicBuildPipelineCreation
-            disableClassicReleasePipelineCreation     = $settings.disableClassicReleasePipelineCreation
-            disableInBoxTasksVar                      = $settings.disableInBoxTasksVar
-            disableMarketplaceTasksVar                = $settings.disableMarketplaceTasksVar
-            disableNode6TasksVar                      = $settings.disableNode6TasksVar
-            enableShellTasksArgsSanitizing            = $settings.enableShellTasksArgsSanitizing
-            forkProtectionEnabled                     = $settings.forkProtectionEnabled
-            buildsEnabledForForks                     = $settings.buildsEnabledForForks
-            enforceJobAuthScopeForForks               = $settings.enforceJobAuthScopeForForks
-            enforceNoAccessToSecretsFromForks         = $settings.enforceNoAccessToSecretsFromForks
-            disableImpliedYAMLCiTrigger               = $settings.disableImpliedYAMLCiTrigger
-            auditEnforceSettableVar                   = $settings.auditEnforceSettableVar
-            isTaskLockdownFeatureEnabled              = $settings.isTaskLockdownFeatureEnabled
-            hasManagePipelinePoliciesPermission       = $settings.hasManagePipelinePoliciesPermission
-            isCommentRequiredForPullRequest           = $settings.isCommentRequiredForPullRequest
-            requireCommentsForNonTeamMembersOnly      = $settings.requireCommentsForNonTeamMembersOnly
-            requireCommentsForNonTeamMemberAndNonContributors = $settings.requireCommentsForNonTeamMemberAndNonContributors
-            enableShellTasksArgsSanitizingAudit       = $settings.enableShellTasksArgsSanitizingAudit
-        }
-    
-        # Add metadata properties
-        $settingsObject | Add-Member -MemberType NoteProperty -Name ObjectType -Value 'Azure.DevOps.Organization.Pipelines.Settings' -Force
-        $settingsObject | Add-Member -MemberType NoteProperty -Name ObjectName -Value "$($script:connection.Organization).OrganizationPipelineSettings" -Force
-        $settingsObject | Add-Member -MemberType NoteProperty -Name name -Value "OrganizationPipelineSettings" -Force
-    
-        # Create structured id object
-        $id = @{
-            originalId   = $null
-            resourceName = "OrganizationPipelineSettings"
-            organization = $script:connection.Organization
-        } | ConvertTo-Json -Depth 100
-        $settingsObject | Add-Member -MemberType NoteProperty -Name id -Value $id -Force
-    
-        $settingsDetails += $settingsObject
-    
-        # Output based on parameters
-        if ($PassThru) {
-            Write-Output $settingsDetails
-        }
-        else {
-            $settingsDetails | ConvertTo-Json -Depth 100 | Out-File -FilePath "$OutputPath\OrganizationPipelineSettings.ado.json"
-        }
+    # Check for active connection
+    if ($null -eq $script:connection) {
+        throw 'Not connected to Azure DevOps. Run Connect-AzDevOps first.'
     }
     
-    Export-ModuleMember -Function Export-AdoOrganizationPipelinesSettings
+    # Retrieve pipeline settings
+    try {
+        $settings = Read-AdoOrganizationPipelinesSettings -Organization $Organization -AccessToken $AccessToken
+        if ($null -eq $settings) {
+            throw "No Organization pipeline settings returned from Read-AdoOrganizationPipelinesSettings."
+        }
+    }
+    catch {
+        throw "Failed to get Organization pipeline settings from Azure DevOps: $($_.Exception.Message)"
+    }
+    
+    # Process settings into exportable format
+    $settingsDetails = @()
+    $settingsObject = [PSCustomObject]@{
+        statusBadgesArePrivate                            = $settings.statusBadgesArePrivate
+        enforceSettableVar                                = $settings.enforceSettableVar
+        enforceJobAuthScope                               = $settings.enforceJobAuthScope
+        enforceJobAuthScopeForReleases                    = $settings.enforceJobAuthScopeForReleases
+        enforceReferencedRepoScopedToken                  = $settings.enforceReferencedRepoScopedToken
+        disableStageChooser                               = $settings.disableStageChooser
+        disableClassicBuildPipelineCreation               = $settings.disableClassicBuildPipelineCreation
+        disableClassicReleasePipelineCreation             = $settings.disableClassicReleasePipelineCreation
+        disableInBoxTasksVar                              = $settings.disableInBoxTasksVar
+        disableMarketplaceTasksVar                        = $settings.disableMarketplaceTasksVar
+        disableNode6TasksVar                              = $settings.disableNode6TasksVar
+        enableShellTasksArgsSanitizing                    = $settings.enableShellTasksArgsSanitizing
+        forkProtectionEnabled                             = $settings.forkProtectionEnabled
+        buildsEnabledForForks                             = $settings.buildsEnabledForForks
+        enforceJobAuthScopeForForks                       = $settings.enforceJobAuthScopeForForks
+        enforceNoAccessToSecretsFromForks                 = $settings.enforceNoAccessToSecretsFromForks
+        disableImpliedYAMLCiTrigger                       = $settings.disableImpliedYAMLCiTrigger
+        auditEnforceSettableVar                           = $settings.auditEnforceSettableVar
+        isTaskLockdownFeatureEnabled                      = $settings.isTaskLockdownFeatureEnabled
+        hasManagePipelinePoliciesPermission               = $settings.hasManagePipelinePoliciesPermission
+        isCommentRequiredForPullRequest                   = $settings.isCommentRequiredForPullRequest
+        requireCommentsForNonTeamMembersOnly              = $settings.requireCommentsForNonTeamMembersOnly
+        requireCommentsForNonTeamMemberAndNonContributors = $settings.requireCommentsForNonTeamMemberAndNonContributors
+        enableShellTasksArgsSanitizingAudit               = $settings.enableShellTasksArgsSanitizingAudit
+    }
+    
+    # Add metadata properties
+    $settingsObject | Add-Member -MemberType NoteProperty -Name ObjectType -Value 'Azure.DevOps.Organization.Pipelines.Settings' -Force
+    $settingsObject | Add-Member -MemberType NoteProperty -Name ObjectName -Value "$($script:connection.Organization).OrganizationPipelineSettings" -Force
+    $settingsObject | Add-Member -MemberType NoteProperty -Name name -Value "OrganizationPipelineSettings" -Force
+    
+    # Create structured id object
+    $id = @{
+        originalId   = $null
+        resourceName = "OrganizationPipelineSettings"
+        organization = $script:connection.Organization
+    } | ConvertTo-Json -Depth 100
+    $settingsObject | Add-Member -MemberType NoteProperty -Name id -Value $id -Force
+    
+    $settingsDetails += $settingsObject
+    
+    # Output based on parameters
+    if ($PassThru) {
+        Write-Output $settingsDetails
+    }
+    else {
+        $settingsDetails | ConvertTo-Json -Depth 100 | Out-File -FilePath "$OutputPath\OrganizationPipelineSettings.ado.json"
+    }
+}
+    
+Export-ModuleMember -Function Export-AdoOrganizationPipelinesSettings

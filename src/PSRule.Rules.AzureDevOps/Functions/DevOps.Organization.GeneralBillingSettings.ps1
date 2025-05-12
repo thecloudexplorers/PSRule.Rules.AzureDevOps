@@ -38,7 +38,7 @@ function Read-AdoOrganizationGeneralBillingSettings {
 
     $uri = "https://azdevopscommerce.dev.azure.com/$OrganizationId/_apis/AzComm/BillingSetup?api-version=7.1-preview.1"
     $headers = @{
-        Authorization = "Bearer $AccessToken"
+        Authorization = $AccessToken
         Accept        = "application/json"
     }
 
@@ -50,16 +50,16 @@ function Read-AdoOrganizationGeneralBillingSettings {
 
         $response = $rawResponse.Content | ConvertFrom-Json
         $settings = [PSCustomObject]@{
-            organizationName         = $response.currentOrganizationName
-            subscriptionStatus       = $response.subscriptionStatus
-            subscriptionId           = if ($response.PSObject.Properties.Name -contains 'subscriptionId' -and $response.subscriptionId) { $response.subscriptionId } else { $null }
+            organizationName           = $response.currentOrganizationName
+            subscriptionStatus         = $response.subscriptionStatus
+            subscriptionId             = if ($response.PSObject.Properties.Name -contains 'subscriptionId' -and $response.subscriptionId) { $response.subscriptionId } else { $null }
             isEnterpriseBillingEnabled = $response.isEnterpriseBillingEnabled
             isAssignmentBillingEnabled = $response.isAssignmentBillingEnabled
-            updatedDateTime          = $response.updatedDateTime
-            updatedBy                = $response.updatedBy
-            allowedBillingOperations = $response.allowedBillingOperations
-            accountName              = $response.accountName
-            resourceGroupName        = $response.resourceGroupName
+            updatedDateTime            = $response.updatedDateTime
+            updatedBy                  = $response.updatedBy
+            allowedBillingOperations   = $response.allowedBillingOperations
+            accountName                = $response.accountName
+            resourceGroupName          = $response.resourceGroupName
         }
 
         Write-Host ""
@@ -77,7 +77,8 @@ function Read-AdoOrganizationGeneralBillingSettings {
                 Write-Host "Subscription ID match : Mismatch. Expected: [$ExpectedSubscriptionId]"
             }
             Write-Host "Billing is configured."
-        } else {
+        }
+        else {
             Write-Host "Billing is not currently configured for this organization."
         }
         Write-Host "Assessment complete."
@@ -148,20 +149,20 @@ function Export-AdoOrganizationGeneralBillingSettings {
     }
 
     $settingsObject = [PSCustomObject]@{
-        organizationName         = $settings.organizationName
-        subscriptionStatus       = $settings.subscriptionStatus
-        subscriptionId           = $settings.subscriptionId
+        organizationName           = $settings.organizationName
+        subscriptionStatus         = $settings.subscriptionStatus
+        subscriptionId             = $settings.subscriptionId
         isEnterpriseBillingEnabled = $settings.isEnterpriseBillingEnabled
         isAssignmentBillingEnabled = $settings.isAssignmentBillingEnabled
-        updatedDateTime          = $settings.updatedDateTime
-        updatedBy                = $settings.updatedBy
-        allowedBillingOperations = $settings.allowedBillingOperations
-        accountName              = $settings.accountName
-        resourceGroupName        = $settings.resourceGroupName
-        ObjectType               = 'Azure.DevOps.Organization.GeneralBillingSettings'
-        ObjectName               = "$Organization.OrganizationGeneralBillingSettings"
-        name                     = "OrganizationGeneralBillingSettings"
-        id                       = (@{ originalId = $null; resourceName = "OrganizationGeneralBillingSettings"; organization = $Organization } | ConvertTo-Json -Depth 100)
+        updatedDateTime            = $settings.updatedDateTime
+        updatedBy                  = $settings.updatedBy
+        allowedBillingOperations   = $settings.allowedBillingOperations
+        accountName                = $settings.accountName
+        resourceGroupName          = $settings.resourceGroupName
+        ObjectType                 = 'Azure.DevOps.Organization.GeneralBillingSettings'
+        ObjectName                 = "$Organization.OrganizationGeneralBillingSettings"
+        name                       = "OrganizationGeneralBillingSettings"
+        id                         = (@{ originalId = $null; resourceName = "OrganizationGeneralBillingSettings"; organization = $Organization } | ConvertTo-Json -Depth 100)
     }
 
     if ($PassThru) {

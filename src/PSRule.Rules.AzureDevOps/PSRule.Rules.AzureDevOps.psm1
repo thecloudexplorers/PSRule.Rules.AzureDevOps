@@ -89,7 +89,7 @@ function Export-AzDevOpsRuleData {
         @{ Name = 'Export-AzDevOpsReleaseDefinitions'; Params = @{ Project = $Project }; Message = "[$Project] Exporting release definitions" },
         @{ Name = 'Export-AzDevOpsGroups'; Params = @{ Project = $Project }; Message = "[$Project] Exporting groups" },        
         @{ Name = 'Export-AzDevOpsRetentionSettings'; Params = @{ Project = $Project }; Message = "[$Project] Exporting retention settings" },
-        @{ Name = 'Export-AdoOrganizationPipelinesSettings'; Params = @{ Organization = $Organization }; Message = "[$Project] Exporting organization pipelines settings" },
+        @{ Name = 'Export-AdoOrganizationPipelinesSettings'; Params = @{ Organization = $Organization; AccessToken = $AccessToken }; Message = "[$Project] Exporting organization pipelines settings" },
         @{ Name = 'Export-AdoOrganizationGeneralOverview'; Params = @{ Organization = $Organization; AccessToken = $AccessToken }; Message = "[$Project] Exporting organization general overview" },
         @{ Name = 'Export-AdoOrganizationGeneralBillingSettings'; Params = @{ Organization = $Organization; OrganizationId = $OrganizationId; AccessToken = $AccessToken }; Message = "[$Project] Exporting organization billing settings" },
         @{ Name = 'Export-AdoOrganizationSecurityPolicies'; Params = @{ Organization = $Organization; AccessToken = $AccessToken }; Message = "[$Project] Exporting organization security policies" }
@@ -102,6 +102,8 @@ function Export-AzDevOpsRuleData {
     else {
         @{ OutputPath = $OutputPath } 
     }
+
+    $failedExports = $null
 
     foreach ($export in $exportCommands) {
         Write-Host $export.Message -ForegroundColor Blue
@@ -116,8 +118,19 @@ function Export-AzDevOpsRuleData {
             & $export.Name @splat -ErrorAction Stop
         }
         catch {
-            Write-Warning "Failed to $($export.Message): $($_.Exception.Message)"
+            $failedExports += $export.Name            
+            Write-Error "[$($export.Name)]: $($_.Exception.Message)" -ErrorAction Continue
         }
+    }
+
+    if ($failedExports.Count) {
+        Write-Warning "The following exported commands could not be executed:"
+        foreach ($failedExport in $failedExports) {
+            Write-Warning $failedExport
+        }
+    }
+    else {
+        Write-Host "All commands where exported successfully!" -ForegroundColor Green
     }
 }
 
