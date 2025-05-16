@@ -1,80 +1,92 @@
+#Requires -Modules Microsoft.PowerShell.SecretManagement, Microsoft.PowerShell.SecretStore, PowerShellGet
+
+
 <#
     .SYNOPSIS
-        Publishes a PowerShell package to a private Azure Artifacts feed.
+    Publishes a PowerShell package to a private Azure Artifacts feed.
 
     .DESCRIPTION
-        This function registers a PSRepository backed by an Azure Artifacts feed, manages credentials securely using SecretManagement and SecretStore,
-        and publishes a specified PowerShell package.
+    This function registers a PSRepository backed by an Azure Artifacts feed, 
+    manages credentials securely using SecretManagement and SecretStore,
+    and publishes a specified PowerShell package.
 
     .PARAMETER Organization
-        The name of your Azure DevOps organization.
+    The name of your Azure DevOps organization.
 
     .PARAMETER Project
-        The Azure DevOps project name.
+    The Azure DevOps project name.
 
     .PARAMETER FeedName
-        The name of the Azure Artifacts feed.
+    The name of the Azure Artifacts feed.
 
     .PARAMETER RepositoryName
-        Desired name for the PowerShell repository registration.
+    Desired name for the PowerShell repository registration.
 
     .PARAMETER Username
-        Username for the Azure DevOps PAT (usually 'Azure DevOps').
+    Username for the Azure DevOps PAT (usually 'Azure DevOps').
 
     .PARAMETER PatToken
-        Azure DevOps Personal Access Token (passed via environment variable or as argument).
+    Azure DevOps Personal Access Token (passed via environment variable or as argument).
 
     .PARAMETER PackagePath
-        The full path to the PowerShell module/package to publish.
+    The full path to the PowerShell module/package to publish.
 
     .PARAMETER ApiKey
-        The API key used for publishing to the Azure Artifacts feed (can be dummy if not used).
+    The API key used for publishing to the Azure Artifacts feed (can be dummy if not used).
 
     .PARAMETER SecretVault
-        (Optional) Secret vault name. Defaults to 'LocalVault'.
+    (Optional) Secret vault name. Defaults to 'LocalVault'.
 
     .EXAMPLE
-        Publish-ToAzureArtifactsPSRepo -Organization 'contoso' -Project 'MyProject' -FeedName 'MyFeed' -RepositoryName 'MyPSRepo' \
-            -Username 'Azure DevOps' -PatToken $env:MyPatToken -PackagePath 'C:\Modules\MyModule' -ApiKey 'dummy'
+    Publish-ToAzureArtifactsPSRepo -Organization 'contoso' -Project 'MyProject' -FeedName 'MyFeed' -RepositoryName 'MyPSRepo' \
+    -Username 'Azure DevOps' -PatToken $env:MyPatToken -PackagePath 'C:\Modules\MyModule' -ApiKey 'dummy'
 
     .NOTES
-        Author: Wesley
-        Date: 2025-04-29
-        Version: 1.1
-        Reference: https://learn.microsoft.com/en-us/azure/devops/artifacts/tutorials/private-powershell-library
-    #>
+    Author: Wesley
+    Date: 2025-04-29
+    Version: 1.1
+    Reference: https://learn.microsoft.com/en-us/azure/devops/artifacts/tutorials/private-powershell-library
+#>
     
     function Publish-ToAzureArtifactsPSRepo {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory)]
-        [string]$Organization,
+         [Parameter(Mandatory)]
+         [ValidateNotNullOrEmpty()]
+         [System.String] $Organization,
 
-        [Parameter(Mandatory)]
-        [string]$Project,
+         [Parameter(Mandatory)]
+         [ValidateNotNullOrEmpty()]
+         [System.String] $Project,
 
-        [Parameter(Mandatory)]
-        [string]$FeedName,
+         [Parameter(Mandatory)]
+         [ValidateNotNullOrEmpty()]
+         [System.String] $FeedName,
 
-        [Parameter(Mandatory)]
-        [string]$RepositoryName,
+         [Parameter(Mandatory)]
+         [ValidateNotNullOrEmpty()]
+         [System.String] $RepositoryName,
 
-        [Parameter(Mandatory)]
-        [string]$Username,
+         [Parameter(Mandatory)]
+         [ValidateNotNullOrEmpty()]
+         [System.String] $Username,
 
-        [Parameter(Mandatory)]
-        [string]$PatToken,
+         [Parameter(Mandatory)]
+         [ValidateNotNullOrEmpty()]
+         [System.String] $PatToken,
 
-        [Parameter(Mandatory)]
-        [string]$PackagePath,
+         [Parameter(Mandatory)]
+         [ValidateScript({ Test-Path -Path $_ -PathType Container })]
+         [System.String] $PackagePath,
 
-        [Parameter(Mandatory)]
-        [string]$ApiKey
+         [Parameter(Mandatory)]
+         [ValidateNotNullOrEmpty()]
+         [System.String] $ApiKey
     )
 
     try {
         # Ensure TLS 1.2 for secure connection
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 
         # Build feed URL (NuGet v3 for PSResourceGet)
         $feedUrl = "https://pkgs.dev.azure.com/$Organization/$Project/_packaging/$FeedName/nuget/v3/index.json"
@@ -93,6 +105,6 @@
         Publish-PSResource -Path $PackagePath -Repository $FeedName -ApiKey $ApiKey -Credential $credential
     }
     catch {
-        Write-Error "❌ Error occurred: $_"
+        Write-Error -Message "[❌ Error occurred: $_]"
     }
 }
