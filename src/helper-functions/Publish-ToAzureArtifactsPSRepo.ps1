@@ -105,6 +105,6 @@
         Publish-PSResource -Path $PackagePath -Repository $FeedName -ApiKey $ApiKey -Credential $credential
     }
     catch {
-        Write-Error -Message "[❌ Error occurred: $_]"
+        Write-Error -Message "[Error occurred: $_]"
     }
 }
