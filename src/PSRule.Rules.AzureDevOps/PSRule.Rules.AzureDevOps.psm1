@@ -42,19 +42,19 @@ Get-ChildItem -Path "$PSScriptRoot/*.Rule.ps1" | ForEach-Object {
 function Export-AzDevOpsRuleData {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [string]
         $Organization,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [string]
         $OrganizationId,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [string]
         $Project,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [string]
         $OutputPath,
         
@@ -93,7 +93,6 @@ function Export-AzDevOpsRuleData {
         @{ Name = 'Export-AdoOrganizationGeneralOverview'; Params = @{ Organization = $Organization; AccessToken = $AccessToken }; Message = "[$Project] Exporting organization general overview" },
         @{ Name = 'Export-AdoOrganizationGeneralBillingSettings'; Params = @{ Organization = $Organization; OrganizationId = $OrganizationId; AccessToken = $AccessToken }; Message = "[$Project] Exporting organization billing settings" },
         @{ Name = 'Export-AdoOrganizationSecurityPolicies'; Params = @{ Organization = $Organization; AccessToken = $AccessToken }; Message = "[$Project] Exporting organization security policies" }
-        # @{ Name = 'Export-AzDevOpsUsers'; Params = @{ Project = $Project }; Message = "Exporting users" },
     )
     
     $commonParams = if ($PassThru) {
@@ -154,14 +153,14 @@ Export-ModuleMember -Function Export-AzDevOpsRuleData -Alias Export-AzDevOpsProj
     Azure DevOps Organization ID, in guid format. 
 
     .EXAMPLE
-    Export-AzDevOpsOrganizationRuleData -Organization "MyOrg" -OrganizationId "7f3b2c1d-3ddb-4e8f-820d-f2913f4e8673" -OutputPath $OutputPath
+    Export-AzDevOpsOrganizationRuleData -Organization "MyOrg" -OrganizationId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -OutputPath $OutputPath
 #>
 Function Export-AzDevOpsOrganizationRuleData {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [string] $Organization,
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [string] $OrganizationId,
         [Parameter(Mandatory)]
         [string]
@@ -172,7 +171,7 @@ Function Export-AzDevOpsOrganizationRuleData {
         $project = $_
         # Create a subfolder for each project
         $subPath = "$($OutputPath)\$($project.name)"
-        if (!(Test-Path -Path $subPath)) {
+        if (-not(Test-Path -Path $subPath)) {
             New-Item -Path $subPath -ItemType Directory
         }
         Export-AzDevOpsRuleData -Organization $Organization -OrganizationId $OrganizationId -Project $project.name -OutputPath $subPath

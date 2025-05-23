@@ -49,10 +49,17 @@ function Read-AdoOrganizationGeneralBillingSettings {
         }
 
         $response = $rawResponse.Content | ConvertFrom-Json
+
+
+        [string]$subscriptionId = $null
+        if ($response.PSObject.Properties.Name -contains 'subscriptionId' -and $response.subscriptionId) { 
+            $subscriptionId = $response.subscriptionId 
+        }
+
         $settings = [PSCustomObject]@{
             organizationName           = $response.currentOrganizationName
             subscriptionStatus         = $response.subscriptionStatus
-            subscriptionId             = if ($response.PSObject.Properties.Name -contains 'subscriptionId' -and $response.subscriptionId) { $response.subscriptionId } else { $null }
+            subscriptionId             = $subscriptionId
             isEnterpriseBillingEnabled = $response.isEnterpriseBillingEnabled
             isAssignmentBillingEnabled = $response.isAssignmentBillingEnabled
             updatedDateTime            = $response.updatedDateTime

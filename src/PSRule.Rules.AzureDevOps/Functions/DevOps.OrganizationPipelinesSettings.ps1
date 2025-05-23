@@ -19,11 +19,11 @@
 function Read-AdoOrganizationPipelinesSettings {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [string]
         $Organization,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [string]
         $AccessToken
     )
@@ -164,11 +164,11 @@ Export-ModuleMember -Function Read-AdoOrganizationPipelinesSettings
 function Export-AdoOrganizationPipelinesSettings {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [string]
         $Organization,
     
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory)]
         [string]
         $AccessToken,
     
@@ -190,11 +190,11 @@ function Export-AdoOrganizationPipelinesSettings {
     try {
         $settings = Read-AdoOrganizationPipelinesSettings -Organization $Organization -AccessToken $AccessToken
         if ($null -eq $settings) {
-            throw "No Organization pipeline settings returned from Read-AdoOrganizationPipelinesSettings."
+            Write-Error "No Organization pipeline settings returned from Read-AdoOrganizationPipelinesSettings."
         }
     }
     catch {
-        throw "Failed to get Organization pipeline settings from Azure DevOps: $($_.Exception.Message)"
+        throw "Failed to get Organization pipeline settings from Azure DevOps:  [$($_.Exception.Message)]"
     }
     
     # Process settings into exportable format
@@ -237,7 +237,7 @@ function Export-AdoOrganizationPipelinesSettings {
         resourceName = "OrganizationPipelineSettings"
         organization = $script:connection.Organization
     } | ConvertTo-Json -Depth 100
-    $settingsObject | Add-Member -MemberType NoteProperty -Name id -Value $id -Force
+    $settingsObject | Add-Member -MemberType NoteProperty -Name "id" -Value $id -Force
     
     $settingsDetails += $settingsObject
     

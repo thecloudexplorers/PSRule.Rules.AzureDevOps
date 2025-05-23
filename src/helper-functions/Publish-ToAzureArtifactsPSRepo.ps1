@@ -34,17 +34,29 @@
         (Optional) Secret vault name. Defaults to 'LocalVault'.
 
     .EXAMPLE
-        Publish-ToAzureArtifactsPSRepo -Organization 'contoso' -Project 'MyProject' -FeedName 'MyFeed' -RepositoryName 'MyPSRepo' \
-            -Username 'Azure DevOps' -PatToken $env:MyPatToken -PackagePath 'C:\Modules\MyModule' -ApiKey 'dummy'
+        # Define all parameters
+        $publishParams = @{
+            Organization     = 'contoso'
+            Project          = 'MyProject'
+            FeedName         = 'MyFeed'
+            RepositoryName   = 'MyPSRepo'
+            Username         = 'Azure DevOps'
+            PatToken         = $env:MyPatToken
+            PackagePath      = 'C:\Modules\MyModule'
+            ApiKey           = 'dummy'
+        }
+
+        # Invoke the function using splatting
+        Publish-ToAzureArtifactsPSRepo @publishParams
 
     .NOTES
         Author: Wesley
         Date: 2025-04-29
-        Version: 1.1
+        Version: 1.1.0
         Reference: https://learn.microsoft.com/en-us/azure/devops/artifacts/tutorials/private-powershell-library
     #>
     
-    function Publish-ToAzureArtifactsPSRepo {
+function Publish-ToAzureArtifactsPSRepo {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
