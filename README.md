@@ -162,6 +162,8 @@ in the organization the PAT has access to.
 
 ```powershell
 Export-AzDevOpsOrganizationRuleData `
+    -Organization "MyOrg"
+    -OrganizationId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
     -OutputPath "C:\Temp\MyOrg"
 ```
 

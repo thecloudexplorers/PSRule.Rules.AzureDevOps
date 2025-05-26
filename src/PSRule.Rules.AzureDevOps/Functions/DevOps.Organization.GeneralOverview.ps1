@@ -38,7 +38,7 @@ function Read-AdoOrganizationGeneralOverview {
 
     # Set headers for authentication
     $headers = @{
-        Authorization  = "Bearer $AccessToken"
+        Authorization  = $AccessToken
         "Content-Type" = "application/json"
     }
 

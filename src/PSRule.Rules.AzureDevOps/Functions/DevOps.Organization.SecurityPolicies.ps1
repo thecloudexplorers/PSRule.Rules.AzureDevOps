@@ -36,7 +36,7 @@ function Read-AdoOrganizationSecurityPolicies {
 
     # Set headers with Bearer token
     $headers = @{
-        Authorization = "Bearer $AccessToken"
+        Authorization = $AccessToken
         Accept        = "application/json"
     }
 
