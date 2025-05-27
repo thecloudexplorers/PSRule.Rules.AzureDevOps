@@ -69,30 +69,46 @@ be found in the [docs/token-permissions.md](docs/token-permissions.md).
 #### Example: Run with full access token
 
 ```powershell
-Connect-AzDevOps `
-    -Organization "MyOrg" `
-    -PAT $MyPAT
-Export-AzDevOpsRuleData `
-    -Project "MyProject" `
-    -OutputPath "C:\Temp\MyProject"
-Assert-PSRule `
-    -InputPath "C:\Temp\MyProject\" `
-    -Module PSRule.Rules.AzureDevOps
+$connectParams = @{
+    Organization = "MyOrg"
+    PAT          = $MyPAT
+}
+Connect-AzDevOps @connectParams
+
+$exportParams = @{
+    Project    = "MyProject"
+    OutputPath = "C:\Temp\MyProject"
+}
+Export-AzDevOpsRuleData @exportParams
+
+$assertParams = @{
+    InputPath = "C:\Temp\MyProject\"
+    Module    = "PSRule.Rules.AzureDevOps"
+}
+Assert-PSRule @assertParams
 ```
 
 #### Example: Run with read-only access token
 
 ```powershell
-Connect-AzDevOps `
-    -Organization "MyOrg" `
-    -PAT $MyPAT `
-    -TokenType ReadOnly
-Export-AzDevOpsRuleData `
-    -Project "MyProject" `
-    -OutputPath "C:\Temp\MyProject"
-Assert-PSRule `
-    -InputPath "C:\Temp\MyProject\" `
-    -Module PSRule.Rules.AzureDevOps
+$connectParams = @{
+    Organization = "MyOrg"
+    PAT          = $MyPAT
+    TokenType    = "ReadOnly"
+}
+Connect-AzDevOps @connectParams
+
+$exportParams = @{
+    Project    = "MyProject"
+    OutputPath = "C:\Temp\MyProject"
+}
+Export-AzDevOpsRuleData @exportParams
+
+$assertParams = @{
+    InputPath = "C:\Temp\MyProject\"
+    Module    = "PSRule.Rules.AzureDevOps"
+}
+Assert-PSRule @assertParams
 ```
 
 ### Bearer Token
@@ -107,15 +123,23 @@ generate a Bearer token can be found in the official Azure DevOps documentation.
 #### Example: Run with full access token
 
 ```powershell
-Connect-AzDevOps `
-    -Organization "MyOrg" `
-    -BearerToken $AccessToken
-Export-AzDevOpsRuleData `
-    -Project "MyProject" `
-    -OutputPath "C:\Temp\MyProject"
-Assert-PSRule `
-    -InputPath "C:\Temp\MyProject\" `
-    -Module PSRule.Rules.AzureDevOps
+$connectParams = @{
+    Organization = "MyOrg"
+    BearerToken  = $AccessToken
+}
+Connect-AzDevOps @connectParams
+
+$exportParams = @{
+    Project    = "MyProject"
+    OutputPath = "C:\Temp\MyProject"
+}
+Export-AzDevOpsRuleData @exportParams
+
+$assertParams = @{
+    InputPath = "C:\Temp\MyProject\"
+    Module    = "PSRule.Rules.AzureDevOps"
+}
+Assert-PSRule @assertParams
 ```
 
 ### Service Principal or Managed Identity
@@ -132,47 +156,72 @@ parameter.
 #### Example: Run with a Service Principal
 
 ```powershell
-Connect-AzDevOps `
-    -Organization "MyOrg" `
-    -AuthType ServicePrincipal `
-    -ClientId $MyAppId `
-    -ClientSecret $MyAppSecret `
-    -TenantId $MyTenantId
-Export-AzDevOpsRuleData `
-    -Project "MyProject" `
-    -OutputPath "C:\Temp\MyProject"
-Assert-PSRule `
-    -InputPath "C:\Temp\MyProject\" `
-    -Module PSRule.Rules.AzureDevOps
+$connectParams = @{
+    Organization  = "MyOrg"
+    AuthType      = "ServicePrincipal"
+    ClientId      = $MyAppId
+    ClientSecret  = $MyAppSecret
+    TenantId      = $MyTenantId
+}
+Connect-AzDevOps @connectParams
+
+$exportParams = @{
+    Project    = "MyProject"
+    OutputPath = "C:\Temp\MyProject"
+}
+Export-AzDevOpsRuleData @exportParams
+
+$assertParams = @{
+    InputPath = "C:\Temp\MyProject\"
+    Module    = "PSRule.Rules.AzureDevOps"
+}
+Assert-PSRule @assertParams
 ```
 
 #### Example: Run with a System Assigned Managed Identity
 
 ```powershell
-Connect-AzDevOps `
-    -Organization "MyOrg" `
-    -AuthType ManagedIdentity
-Export-AzDevOpsRuleData `
-    -Project "MyProject" `
-    -OutputPath "C:\Temp\MyProject"
-Assert-PSRule `
-    -InputPath "C:\Temp\MyProject\" `
-    -Module PSRule.Rules.AzureDevOps
+$connectParams = @{
+    Organization = "MyOrg"
+    AuthType     = "ManagedIdentity"
+}
+Connect-AzDevOps @connectParams
+
+$exportParams = @{
+    Project    = "MyProject"
+    OutputPath = "C:\Temp\MyProject"
+}
+Export-AzDevOpsRuleData @exportParams
+
+$assertParams = @{
+    InputPath = "C:\Temp\MyProject\"
+    Module    = "PSRule.Rules.AzureDevOps"
+}
+Assert-PSRule @assertParams
 ```
 
 #### Example: Run with a User Assigned Managed Identity
 
 ```powershell
 $env:ADO_MSI_CLIENT_ID = $MyClientId
-Connect-AzDevOps `
-    -Organization "MyOrg" `
-    -AuthType ManagedIdentity `
-Export-AzDevOpsRuleData `
-    -Project "MyProject" `
-    -OutputPath "C:\Temp\MyProject"
-Assert-PSRule `
-    -InputPath "C:\Temp\MyProject\" `
-    -Module PSRule.Rules.AzureDevOps
+
+$connectParams = @{
+    Organization = "MyOrg"
+    AuthType     = "ManagedIdentity"
+}
+Connect-AzDevOps @connectParams
+
+$exportParams = @{
+    Project    = "MyProject"
+    OutputPath = "C:\Temp\MyProject"
+}
+Export-AzDevOpsRuleData @exportParams
+
+$assertParams = @{
+    InputPath = "C:\Temp\MyProject\"
+    Module    = "PSRule.Rules.AzureDevOps"
+}
+Assert-PSRule @assertParams
 ```
 
 ![Screenshot of version 0.0.9 run](assets/media/run-0.0.9.png)
@@ -184,10 +233,12 @@ data at the organization level, looping through all projects
 in the organization the PAT has access to.
 
 ```powershell
-Export-AzDevOpsOrganizationRuleData `
-    -Organization "MyOrg"
-    -OrganizationId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-    -OutputPath "C:\Temp\MyOrg"
+$exportOrgParams = @{
+    Organization   = "MyOrg"
+    OrganizationId = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    OutputPath     = "C:\Temp\MyOrg"
+}
+Export-AzDevOpsOrganizationRuleData @exportOrgParams
 ```
 
 ### Disable checks for Azure DevOps Features that require additional licenses
@@ -199,10 +250,12 @@ baseline to the `Assert-PSRule` command through the `-Baseline`
 option.
 
 ```powershell
-Assert-PSRule `
-    -InputPath "C:\Temp\MyProject\" `
-    -Module PSRule.Rules.AzureDevOps `
-    -Baseline Baseline.NoExtraLicense
+$assertParams = @{
+    InputPath = "C:\Temp\MyProject\"
+    Module    = "PSRule.Rules.AzureDevOps"
+    Baseline  = "Baseline.NoExtraLicense"
+}
+Assert-PSRule @assertParams
 ```
 
 ## Rules
