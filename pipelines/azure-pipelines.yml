@@ -44,23 +44,23 @@ steps:
         }
         Write-Host "##[endgroup]"
 
-  - task: PowerShell@2
-    displayName: "Install PSGallery Powershell Modules Inline"
-    inputs:
-      # Inline call to the script is being used as is is not possible to escape the '@' in PatUser variable via script
-      targetType: inline
-      pwsh: true
-      script: |
-        $ArtifactFeed = @{
-          OrganizationName = '$(azureDevOpsArtifactOrganizationName)'
-          ProjectName = '$(azureDevOpsArtifactProjectName)'
-          FeedName = '$(azureDevOpsArtifactProjectNameFeedName)'
-          PatUser = '$(azureDevOpsArtifactPatUser)'
-          PatToken = '$(azureDevOpsArtifactPatToken)'
-          CustomModules = @('PSRule.Rules.AzureDevOps')
-        }
+  # - task: PowerShell@2
+  #   displayName: "Install PSGallery Powershell Modules Inline"
+  #   inputs:
+  #     # Inline call to the script is being used as is is not possible to escape the '@' in PatUser variable via script
+  #     targetType: inline
+  #     pwsh: true
+  #     script: |
+  #       $ArtifactFeed = @{
+  #         OrganizationName = '$(azureDevOpsArtifactOrganizationName)'
+  #         ProjectName = '$(azureDevOpsArtifactProjectName)'
+  #         FeedName = '$(azureDevOpsArtifactProjectNameFeedName)'
+  #         PatUser = '$(azureDevOpsArtifactPatUser)'
+  #         PatToken = '$(azureDevOpsArtifactPatToken)'
+  #         CustomModules = @('PSRule.Rules.AzureDevOps')
+  #       }
 
-        . "$(Pipeline.Workspace)/s/src/helper-functions/Initialize-ArtifactFeed.ps1" @ArtifactFeed
+  #       . "$(Pipeline.Workspace)/s/src/helper-functions/Initialize-ArtifactFeed.ps1" @ArtifactFeed
 
   - task: PowerShell@2
     displayName: "Publish PSModule to Azure Artifacts"
@@ -68,23 +68,24 @@ steps:
       targetType: inline
       pwsh: true
       script: |
-        # . "$(Build.SourcesDirectory)\src\helper-functions\AzureDevOps.ArtifactFeedManagement.ps1"
-        # $artifactFeed = @{
-        #     Organization = $env:ADO_ORGANIZATION
-        #     Project      = $env:ADO_PROJECT
-        #     FeedName         = $env:ADO_FEED_NAME
-        #     PatUser          = $env:ADO_USERNAME
-        #     PatToken         = (ConvertTo-SecureString -String $env:ADO_PAT -AsPlainText -Force)
-        # }
+        . "$(Build.SourcesDirectory)\src\helper-functions\AzureDevOps.ArtifactFeedManagement.ps1"
+        $artifactFeed = @{
+            Organization = $env:ADO_ORGANIZATION
+            Project      = $env:ADO_PROJECT
+            FeedName         = $env:ADO_FEED_NAME
+            PatUser          = $env:ADO_USERNAME
+            PatToken         = (ConvertTo-SecureString -String $env:ADO_PAT -AsPlainText -Force)
+        }
 
-        # Register-AzureDevOpsArtifactFeed @artifactFeed
+        Register-AzureDevOpsArtifactFeed @artifactFeed
 
         . "$(Build.SourcesDirectory)\src\helper-functions\AzureDevOps.ArtifactFeedManagement.ps1"
         $publishParams = @{
-          FeedName       = $env:ADO_FEED_NAME
+
           Username       = $env:ADO_USERNAME
-          ApiKey         = '123456'
           PatToken       = (ConvertTo-SecureString -String $env:ADO_PAT -AsPlainText -Force)
+          PSRepositoryName = $env:ADO_FEED_NAME
+          ApiKey         = '123456'
           PackagePath    = '$(Build.SourcesDirectory)\src\PSRule.Rules.AzureDevOps'
         }
 

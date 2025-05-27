@@ -22,7 +22,7 @@ function Register-AzureDevOpsArtifactFeed {
         Azure Artifacts feed name.
 
     .PARAMETER PatUser
-        Username for the Azure DevOps PAT credential.
+        PatUser for the Azure DevOps PAT credential.
 
     .PARAMETER PatToken
         Azure DevOps Personal Access Token (PAT) with feed-read permissions as a SecureString.
@@ -65,6 +65,10 @@ function Register-AzureDevOpsArtifactFeed {
         [ValidateNotNullOrEmpty()]
         [System.Security.SecureString] $PatToken,
 
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [System.String] $PSRepositoryName,
+
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.String[]] $CustomModules = @()
@@ -80,7 +84,6 @@ function Register-AzureDevOpsArtifactFeed {
         # Static configuration
         $vaultName = 'SecretVault'
         $secretName = 'MyCredential'
-        $repoName = 'PowershellPSResourceRepository'
         $passwordTimeout = -1
 
         # Generate random password for vault
@@ -147,12 +150,12 @@ function Register-AzureDevOpsArtifactFeed {
         Write-Host '##[endgroup]'
 
         Write-Host '##[group] Register PSResource repository'
-        if (Get-PSResourceRepository -Name $repoName -ErrorAction SilentlyContinue) {
-            Write-Verbose "Unregistering existing repository $repoName"
-            Unregister-PSResourceRepository -Name $repoName -ErrorAction Stop
+        if (Get-PSResourceRepository -Name $PSRepositoryName -ErrorAction SilentlyContinue) {
+            Write-Verbose "Unregistering existing repository $PSRepositoryName"
+            Unregister-PSResourceRepository -Name $PSRepositoryName -ErrorAction Stop
         }
         $repoParams = @{
-            Name           = $repoName
+            Name           = $PSRepositoryName
             Uri            = $feedUrl
             Trusted        = $true
             CredentialInfo = $credentialInfo
@@ -167,7 +170,7 @@ function Register-AzureDevOpsArtifactFeed {
         foreach ($module in $CustomModules) {
             $installParams = @{
                 Name        = $module
-                Repository  = $repoName
+                Repository  = $PSRepositoryName
                 Credential  = $cred
                 ErrorAction = 'Stop'
             }
@@ -196,8 +199,8 @@ function Publish-AzureDevOpsArtifactPackage {
 .PARAMETER FeedName
     The name of the Azure Artifacts feed.
 
-.PARAMETER Username
-    Username for the Azure DevOps PAT (usually 'Azure DevOps').
+.PARAMETER PatUser
+    PatUser for the Azure DevOps PAT (usually 'Azure DevOps').
 
 .PARAMETER PatToken
     Azure DevOps Personal Access Token as a SecureString.
@@ -212,9 +215,9 @@ function Publish-AzureDevOpsArtifactPackage {
     # Define all parameters
     $securePat = ConvertTo-SecureString -String $env:MyPatToken -AsPlainText -Force
     $publishParams = @{
-        FeedName         = 'MyFeed'
-        Username         = 'Azure DevOps'
+        PatUser          = 'Azure DevOps'
         PatToken         = $securePat
+        PSRepositoryName   = 'MyRepository'
         PackagePath      = 'C:\Modules\MyModule'
         ApiKey           = 'dummy'
     }
@@ -224,36 +227,29 @@ function Publish-AzureDevOpsArtifactPackage {
 #>
     [CmdletBinding()]
     param (
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [System.String] $PatUser,
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [System.String]
-        $FeedName,
+        [System.Security.SecureString] $PatToken,
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [System.String]
-        $Username,
-
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [System.Security.SecureString]
-        $PatToken,
+        [System.String] $PSRepositoryName,
 
         [Parameter(Mandatory)]
         [ValidateScript({ Test-Path -Path $_ -PathType Container })]
-        [System.String]
-        $PackagePath,
+        [System.String] $PackagePath,
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [System.String]
-        $ApiKey
+        [System.String] $ApiKey
     )
     Begin {
         # Fail fast on all errors
         $ErrorActionPreference = 'Stop'
-        $repositoryName = 'PowershellPSResourceRepository'
 
         Write-Host "##[group]Importing PowerShell Modules"
         try {
@@ -276,12 +272,12 @@ function Publish-AzureDevOpsArtifactPackage {
 
         Write-Host '##[group] Publishing module' -ForegroundColor Green
 
-        $credential = New-Object System.Management.Automation.PSCredential ($Username, $PatToken)
+        $credential = New-Object System.Management.Automation.PSCredential ($PatUser, $PatToken)
 
         # Publish the module using splatted parameters
         $publishParams = @{
             Path        = $PackagePath
-            Repository  = $repositoryName
+            Repository  = $PSRepositoryName
             ApiKey      = $ApiKey
             Credential  = $credential
             ErrorAction = 'Stop'
