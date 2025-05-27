@@ -146,7 +146,7 @@ Process {
     Write-Host "##[group]Set Azure Artifacts as PowerShell Repository"
 
     Write-Host "PSResourceRepositories"
-    Get-PSResourceRepository
+    Get-PSResourceRepository -Name
 
     # Unregister existing repository if present
     if (Get-PSResourceRepository -Name $repositoryName -ErrorAction SilentlyContinue) {
@@ -163,6 +163,8 @@ Process {
         ErrorAction    = 'Stop'
     }
     Register-PSResourceRepository @repoParams
+
+    Get-PSResourceRepository -Name
 
     Write-Host "##[endgroup]"
 

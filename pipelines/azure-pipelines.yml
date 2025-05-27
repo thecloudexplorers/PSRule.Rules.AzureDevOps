@@ -60,7 +60,7 @@ steps:
           CustomModules = @('PSRule.Rules.AzureDevOps')
         }
 
-        . "$(Pipeline.Workspace)/s/src/helper-functions\Initialize-ArtifactFeed.ps1" @ArtifactFeed
+        . "$(Pipeline.Workspace)/s/src/helper-functions/Initialize-ArtifactFeed.ps1" @ArtifactFeed
 
   - task: PowerShell@2
     displayName: "Publish PSModule to Azure Artifacts"
