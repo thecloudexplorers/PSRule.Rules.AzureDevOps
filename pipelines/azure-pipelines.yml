@@ -64,7 +64,7 @@ steps:
         $publishParams = @{
           FeedName       = $env:ADO_FEED_NAME
           Username       = $env:ADO_USERNAME
-          ApiKey         = $env:ADO_API_KEY
+          ApiKey         = '123456'
           PatToken       = (ConvertTo-SecureString -String $env:ADO_PAT -AsPlainText -Force)
           PackagePath    = '$(Build.SourcesDirectory)\src\PSRule.Rules.AzureDevOps'
         }
