@@ -44,7 +44,7 @@ steps:
         Write-Host "##[endgroup]"
 
   - task: PowerShell@2
-    displayName: "Initialize Azure DevOps Artifact Feed"
+    displayName: "Publish PSModule to Azure Artifacts"
     inputs:
       targetType: inline
       pwsh: true
@@ -59,19 +59,7 @@ steps:
         }
 
         Register-AzureDevOpsArtifactFeed @artifactFeed
-    env:
-      ADO_ORGANIZATION: $(azureDevOpsArtifactOrganizationName)
-      ADO_PROJECT: $(azureDevOpsArtifactProjectName)
-      ADO_FEED_NAME: $(azureDevOpsArtifactProjectNameFeedName)
-      ADO_USERNAME: $(azureDevOpsArtifactPatUser)
-      ADO_PAT: $(azureDevOpsArtifactPatToken)
 
-  - task: PowerShell@2
-    displayName: "Publish PSModule to Azure Artifacts"
-    inputs:
-      targetType: inline
-      pwsh: true
-      script: |
         . "$(Build.SourcesDirectory)\src\helper-functions\AzureDevOps.ArtifactFeedManagement.ps1"
         $publishParams = @{
           FeedName       = $env:ADO_FEED_NAME
@@ -86,6 +74,20 @@ steps:
       ADO_ORGANIZATION: $(azureDevOpsArtifactOrganizationName)
       ADO_PROJECT: $(azureDevOpsArtifactProjectName)
       ADO_FEED_NAME: $(azureDevOpsArtifactProjectNameFeedName)
-      ADO_API_KEY: $(azureDevOpsArtifactPatToken)
       ADO_USERNAME: $(azureDevOpsArtifactPatUser)
       ADO_PAT: $(azureDevOpsArtifactPatToken)
+
+  # - task: PowerShell@2
+  #   displayName: "Publish PSModule to Azure Artifacts"
+  #   inputs:
+  #     targetType: inline
+  #     pwsh: true
+  #     script: |
+
+  #   env:
+  #     ADO_ORGANIZATION: $(azureDevOpsArtifactOrganizationName)
+  #     ADO_PROJECT: $(azureDevOpsArtifactProjectName)
+  #     ADO_FEED_NAME: $(azureDevOpsArtifactProjectNameFeedName)
+  #     ADO_API_KEY: $(azureDevOpsArtifactPatToken)
+  #     ADO_USERNAME: $(azureDevOpsArtifactPatUser)
+  #     ADO_PAT: $(azureDevOpsArtifactPatToken)
