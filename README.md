@@ -69,30 +69,77 @@ be found in the [docs/token-permissions.md](docs/token-permissions.md).
 #### Example: Run with full access token
 
 ```powershell
-Connect-AzDevOps `
-    -Organization "MyOrg" `
-    -PAT $MyPAT
-Export-AzDevOpsRuleData `
-    -Project "MyProject" `
-    -OutputPath "C:\Temp\MyProject"
-Assert-PSRule `
-    -InputPath "C:\Temp\MyProject\" `
-    -Module PSRule.Rules.AzureDevOps
+$connectParams = @{
+    Organization = "MyOrg"
+    PAT          = $MyPAT
+}
+Connect-AzDevOps @connectParams
+
+$exportParams = @{
+    Project    = "MyProject"
+    OutputPath = "C:\Temp\MyProject"
+}
+Export-AzDevOpsRuleData @exportParams
+
+$assertParams = @{
+    InputPath = "C:\Temp\MyProject\"
+    Module    = "PSRule.Rules.AzureDevOps"
+}
+Assert-PSRule @assertParams
 ```
 
 #### Example: Run with read-only access token
 
 ```powershell
-Connect-AzDevOps `
-    -Organization "MyOrg" `
-    -PAT $MyPAT `
-    -TokenType ReadOnly
-Export-AzDevOpsRuleData `
-    -Project "MyProject" `
-    -OutputPath "C:\Temp\MyProject"
-Assert-PSRule `
-    -InputPath "C:\Temp\MyProject\" `
-    -Module PSRule.Rules.AzureDevOps
+$connectParams = @{
+    Organization = "MyOrg"
+    PAT          = $MyPAT
+    TokenType    = "ReadOnly"
+}
+Connect-AzDevOps @connectParams
+
+$exportParams = @{
+    Project    = "MyProject"
+    OutputPath = "C:\Temp\MyProject"
+}
+Export-AzDevOpsRuleData @exportParams
+
+$assertParams = @{
+    InputPath = "C:\Temp\MyProject\"
+    Module    = "PSRule.Rules.AzureDevOps"
+}
+Assert-PSRule @assertParams
+```
+
+### Bearer Token
+
+You can connect to your Azure DevOps organization using a Bearer token and 
+run an export of your Azure DevOps project to evaluate the rules on the exported data. 
+The -BearerToken value should be a valid Azure DevOps Bearer token with 
+sufficient permissions to read the Organization data. By default, the token 
+is expected to have full access permissions. Documentation on how to 
+generate a Bearer token can be found in the official Azure DevOps documentation.
+
+#### Example: Run with full access token
+
+```powershell
+$connectParams = @{
+    Organization = "MyOrg"
+    BearerToken  = $AccessToken
+}
+Connect-AzDevOps @connectParams
+
+$exportParams = @{
+    Project    = "MyProject"
+    OutputPath = "C:\Temp\MyProject"
+}
+Export-AzDevOpsRuleData @exportParams
+
+$assertParams = @{
+    InputPath = "C:\Temp\MyProject\"
+    Module    = "PSRule.Rules.AzureDevOps"
+}
+Assert-PSRule @assertParams
 ```
 
 ### Service Principal or Managed Identity
@@ -109,47 +156,72 @@ parameter.
 #### Example: Run with a Service Principal
 
 ```powershell
-Connect-AzDevOps `
-    -Organization "MyOrg" `
-    -AuthType ServicePrincipal `
-    -ClientId $MyAppId `
-    -ClientSecret $MyAppSecret `
-    -TenantId $MyTenantId
-Export-AzDevOpsRuleData `
-    -Project "MyProject" `
-    -OutputPath "C:\Temp\MyProject"
-Assert-PSRule `
-    -InputPath "C:\Temp\MyProject\" `
-    -Module PSRule.Rules.AzureDevOps
+$connectParams = @{
+    Organization  = "MyOrg"
+    AuthType      = "ServicePrincipal"
+    ClientId      = $MyAppId
+    ClientSecret  = $MyAppSecret
+    TenantId      = $MyTenantId
+}
+Connect-AzDevOps @connectParams
+
+$exportParams = @{
+    Project    = "MyProject"
+    OutputPath = "C:\Temp\MyProject"
+}
+Export-AzDevOpsRuleData @exportParams
+
+$assertParams = @{
+    InputPath = "C:\Temp\MyProject\"
+    Module    = "PSRule.Rules.AzureDevOps"
+}
+Assert-PSRule @assertParams
 ```
 
 #### Example: Run with a System Assigned Managed Identity
 
 ```powershell
-Connect-AzDevOps `
-    -Organization "MyOrg" `
-    -AuthType ManagedIdentity
-Export-AzDevOpsRuleData `
-    -Project "MyProject" `
-    -OutputPath "C:\Temp\MyProject"
-Assert-PSRule `
-    -InputPath "C:\Temp\MyProject\" `
-    -Module PSRule.Rules.AzureDevOps
+$connectParams = @{
+    Organization = "MyOrg"
+    AuthType     = "ManagedIdentity"
+}
+Connect-AzDevOps @connectParams
+
+$exportParams = @{
+    Project    = "MyProject"
+    OutputPath = "C:\Temp\MyProject"
+}
+Export-AzDevOpsRuleData @exportParams
+
+$assertParams = @{
+    InputPath = "C:\Temp\MyProject\"
+    Module    = "PSRule.Rules.AzureDevOps"
+}
+Assert-PSRule @assertParams
 ```
 
 #### Example: Run with a User Assigned Managed Identity
 
 ```powershell
 $env:ADO_MSI_CLIENT_ID = $MyClientId
-Connect-AzDevOps `
-    -Organization "MyOrg" `
-    -AuthType ManagedIdentity `
-Export-AzDevOpsRuleData `
-    -Project "MyProject" `
-    -OutputPath "C:\Temp\MyProject"
-Assert-PSRule `
-    -InputPath "C:\Temp\MyProject\" `
-    -Module PSRule.Rules.AzureDevOps
+
+$connectParams = @{
+    Organization = "MyOrg"
+    AuthType     = "ManagedIdentity"
+}
+Connect-AzDevOps @connectParams
+
+$exportParams = @{
+    Project    = "MyProject"
+    OutputPath = "C:\Temp\MyProject"
+}
+Export-AzDevOpsRuleData @exportParams
+
+$assertParams = @{
+    InputPath = "C:\Temp\MyProject\"
+    Module    = "PSRule.Rules.AzureDevOps"
+}
+Assert-PSRule @assertParams
 ```
 
 ![Screenshot of version 0.0.9 run](assets/media/run-0.0.9.png)
@@ -161,10 +233,12 @@ data at the organization level, looping through all projects
 in the organization the PAT has access to.
 
 ```powershell
-Export-AzDevOpsOrganizationRuleData `
-    -Organization "MyOrg"
-    -OrganizationId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-    -OutputPath "C:\Temp\MyOrg"
+$exportOrgParams = @{
+    Organization   = "MyOrg"
+    OrganizationId = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    OutputPath     = "C:\Temp\MyOrg"
+}
+Export-AzDevOpsOrganizationRuleData @exportOrgParams
 ```
 
 ### Disable checks for Azure DevOps Features that require additional licenses
@@ -176,10 +250,12 @@ baseline to the `Assert-PSRule` command through the `-Baseline`
 option.
 
 ```powershell
-Assert-PSRule `
-    -InputPath "C:\Temp\MyProject\" `
-    -Module PSRule.Rules.AzureDevOps `
-    -Baseline Baseline.NoExtraLicense
+$assertParams = @{
+    InputPath = "C:\Temp\MyProject\"
+    Module    = "PSRule.Rules.AzureDevOps"
+    Baseline  = "Baseline.NoExtraLicense"
+}
+Assert-PSRule @assertParams
 ```
 
 ## Rules
@@ -270,6 +346,50 @@ in building the ruleset for this module.
 - [Azure.DevOps.Tasks.VariableGroup.NoKeyVaultNoSecrets](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Tasks.VariableGroup.NoKeyVaultNoSecrets.md)
 - [Azure.DevOps.Tasks.VariableGroup.NoPlainTextSecrets](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Tasks.VariableGroup.NoPlainTextSecrets.md)
 - [Azure.DevOps.Tasks.VariableGroup.ProjectValidUsers](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Tasks.VariableGroup.ProjectValidUsers.md)
+
+### Implemented Organization rules
+
+- [Azure.DevOps.Organization.GeneralBillingSettings.SubscriptionActive](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.GeneralBillingSettings.SubscriptionActive.md)  
+- [Azure.DevOps.Organization.GeneralBillingSettings.EnterpriseBillingConfigured](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.GeneralBillingSettings.EnterpriseBillingConfigured.md)  
+- [Azure.DevOps.Organization.GeneralBillingSettings.AssignmentBillingEnabled](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.GeneralBillingSettings.AssignmentBillingEnabled.md)  
+- [Azure.DevOps.Organization.GeneralOverview.DescriptionSet](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.GeneralOverview.DescriptionSet.md)  
+- [Azure.DevOps.Organization.GeneralOverview.TimeZoneSet](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.GeneralOverview.TimeZoneSet.md)  
+- [Azure.DevOps.Organization.GeneralOverview.GeographySet](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.GeneralOverview.GeographySet.md)  
+- [Azure.DevOps.Organization.GeneralOverview.OwnerSet](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.GeneralOverview.OwnerSet.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.DisableAnonymousBadgeAccess](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.DisableAnonymousBadgeAccess.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.LimitSettableVariables](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.LimitSettableVariables.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.LimitJobAuthScopeNonRelease](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.LimitJobAuthScopeNonRelease.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.LimitJobAuthScopeRelease](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.LimitJobAuthScopeRelease.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.ProtectRepoAccessInYaml](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.ProtectRepoAccessInYaml.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.DisableClassicBuildPipelines](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.DisableClassicBuildPipelines.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.DisableClassicReleasePipelines](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.DisableClassicReleasePipelines.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.LimitPRsFromForks](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.LimitPRsFromForks.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.DisableBuildsFromForks](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.DisableBuildsFromForks.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.SanitizeShellTaskArguments](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.SanitizeShellTaskArguments.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.DisableStageChooser](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.DisableStageChooser.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.DisableInBoxTasksVar](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.DisableInBoxTasksVar.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.DisableMarketplaceTasksVar](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.DisableMarketplaceTasksVar.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.DisableNode6TasksVar](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.DisableNode6TasksVar.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.LimitJobAuthScopeForForks](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.LimitJobAuthScopeForForks.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.DisableSecretsFromForks](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.DisableSecretsFromForks.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.DisableImpliedYAMLCiTrigger](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.DisableImpliedYAMLCiTrigger.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.EnableAuditSettableVar](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.EnableAuditSettableVar.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.EnableTaskLockdown](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.EnableTaskLockdown.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.RestrictPipelinePoliciesPermission](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.RestrictPipelinePoliciesPermission.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.RequireCommentsForPullRequest](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.RequireCommentsForPullRequest.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.RequireCommentsForNonTeamMembers](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.RequireCommentsForNonTeamMembers.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.RequireCommentsForNonTeamAndNonContributors](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.RequireCommentsForNonTeamAndNonContributors.md)  
+- [Azure.DevOps.Organization.Pipelines.Settings.EnableShellTasksArgsSanitizingAudit](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Pipelines.Settings.EnableShellTasksArgsSanitizingAudit.md)  
+- [Azure.DevOps.Organization.Security.Policies.DisallowSecureShell](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Security.Policies.DisallowSecureShell.md)  
+- [Azure.DevOps.Organization.Security.Policies.DisallowRequestAccessToken](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Security.Policies.DisallowRequestAccessToken.md)  
+- [Azure.DevOps.Organization.Security.Policies.DisallowTeamAdminsInvitations](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Security.Policies.DisallowTeamAdminsInvitations.md)  
+- [Azure.DevOps.Organization.Security.Policies.DisallowFeedbackCollection](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Security.Policies.DisallowFeedbackCollection.md)  
+- [Azure.DevOps.Organization.Security.Policies.EnforceAADConditionalAccess](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Security.Policies.EnforceAADConditionalAccess.md)  
+- [Azure.DevOps.Organization.Security.Policies.DisallowOAuthAuthentication](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Security.Policies.DisallowOAuthAuthentication.md)  
+- [Azure.DevOps.Organization.Security.Policies.EnableLogAuditEvents](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Security.Policies.EnableLogAuditEvents.md)  
+- [Azure.DevOps.Organization.Security.Policies.EnableArtifactsProtection](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Security.Policies.EnableArtifactsProtection.md)  
+- [Azure.DevOps.Organization.Security.Policies.DisallowAnonymousAccess](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Security.Policies.DisallowAnonymousAccess.md)  
+- [Azure.DevOps.Organization.Security.Policies.DisallowAadGuestUserAccess](src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Organization.Security.Policies.DisallowAadGuestUserAccess.md)  
 
 ## Contributing
 
