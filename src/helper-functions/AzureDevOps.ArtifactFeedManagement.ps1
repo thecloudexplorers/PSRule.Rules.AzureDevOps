@@ -159,6 +159,8 @@ function Register-AzureDevOpsArtifactFeed {
             ErrorAction    = 'Stop'
         }
         Register-PSResourceRepository @repoParams
+        Write-Verbose "Registered PSResourceRepositories"
+        Get-PSResourceRepository -Verbose
         Write-Host '##[endgroup]'
 
         Write-Host "##[group] Install custom modules: $($CustomModules -join ', ')"
