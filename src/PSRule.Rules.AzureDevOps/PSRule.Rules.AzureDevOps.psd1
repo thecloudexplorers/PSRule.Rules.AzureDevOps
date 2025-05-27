@@ -30,7 +30,9 @@
     Copyright            = '(c) Wesley Camargo, base on Roderick Bant. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description          = 'PSRule rules module for Azure DevOps project configuration best practices. This module helps to audit an Azure DevOps project for secure and best practice configuration. The module requires PSRule to be installed.'
+    Description          = 'PSRule rules module for Azure DevOps project configuration best practices.
+    This module helps to audit an Azure DevOps project for secure and best practice configuration.
+    The module requires PSRule to be installed.'
 
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion    = '5.1'
@@ -41,17 +43,19 @@
     # Minimum version of the PowerShell host required by this module
     # PowerShellHostVersion = ''
 
-    # Minimum version of Microsoft .NET Framework required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
+    # Minimum version of Microsoft .NET Framework required by this module.
+    # This prerequisite is valid for the PowerShell Desktop edition only.
     # DotNetFrameworkVersion = ''
 
-    # Minimum version of the common language runtime (CLR) required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
+    # Minimum version of the common language runtime (CLR) required by this module.
+    # This prerequisite is valid for the PowerShell Desktop edition only.
     # ClrVersion = ''
 
     # Processor architecture (None, X86, Amd64) required by this module
     # ProcessorArchitecture = ''
 
     # Modules that must be imported into the global environment prior to importing this module
-    RequiredModules      = @('PSRule')
+    RequiredModules      = @()
 
     # Assemblies that must be loaded prior to importing this module
     # RequiredAssemblies = @()
@@ -68,8 +72,14 @@
     # Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
     # NestedModules = @()
 
-    # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-    FunctionsToExport    = @('Export-AzDevOpsRuleData', 'Export-AzDevOpsOrganizationRuleData', 'Connect-AzDevOps', 'Disconnect-AzDevOps', '*')
+    # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry,
+    # use an empty array if there are no functions to export.
+    FunctionsToExport    = @(
+        'Export-AzDevOpsRuleData',
+        'Export-AzDevOpsOrganizationRuleData',
+        'Connect-AzDevOps',
+        'Disconnect-AzDevOps', '*'
+    )
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport      = @()
@@ -95,13 +105,13 @@
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags       = @('PSRule-rules', 'PSRule', 'AzureDevOps', 'Security')
+            Tags                       = @('PSRule-rules', 'PSRule', 'AzureDevOps', 'Security')
 
             # A URL to the license for this module.
-            LicenseUri = 'https://github.com/thecloudexplorers/PSRule.Rules.AzureDevOps/blob/main/LICENSE'
+            LicenseUri                 = 'https://github.com/thecloudexplorers/PSRule.Rules.AzureDevOps/blob/main/LICENSE'
 
             # A URL to the main website for this project.
-            ProjectUri = 'https://github.com/thecloudexplorers/PSRule.Rules.AzureDevOps'
+            ProjectUri                 = 'https://github.com/thecloudexplorers/PSRule.Rules.AzureDevOps'
 
             # A URL to an icon representing this module.
             # IconUri = ''
@@ -116,7 +126,7 @@
             # RequireLicenseAcceptance = $false
 
             # External dependent modules of this module
-            # ExternalModuleDependencies = @()
+            ExternalModuleDependencies = @('PSRule')
 
         } # End of PSData hashtable
 
