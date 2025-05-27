@@ -253,6 +253,7 @@ function Publish-AzureDevOpsArtifactPackage {
     Begin {
         # Fail fast on all errors
         $ErrorActionPreference = 'Stop'
+        $repositoryName = 'PowershellPSResourceRepository'
 
         Write-Host "##[group]Importing PowerShell Modules"
         try {
@@ -280,7 +281,7 @@ function Publish-AzureDevOpsArtifactPackage {
         # Publish the module using splatted parameters
         $publishParams = @{
             Path        = $PackagePath
-            Repository  = $FeedName
+            Repository  = $repositoryName
             ApiKey      = $ApiKey
             Credential  = $credential
             ErrorAction = 'Stop'
