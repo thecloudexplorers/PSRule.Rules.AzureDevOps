@@ -43,21 +43,13 @@ steps:
         Write-Host "##[endgroup]"
 
   - task: PowerShell@2
-    displayName: "Load helper functions"
-    inputs:
-      targetType: inline
-      pwsh: true
-      script: |
-        # Dot-source so that Register-AzureDevOpsArtifactFeed and Publish-* are available
-        . "$(Build.SourcesDirectory)\src\helper-functions\AzureDevOps.ArtifactFeedManagement.ps1"
-
-  - task: PowerShell@2
     displayName: "Initialize Azure DevOps Artifact Feed"
     inputs:
       targetType: inline
       pwsh: true
       script: |
-        $ArtifactFeed = @{
+        . "$(Build.SourcesDirectory)\src\helper-functions\AzureDevOps.ArtifactFeedManagement.ps1"
+        $artifactFeed = @{
             Organization = $env:ADO_ORGANIZATION
             Project      = $env:ADO_PROJECT
             FeedName         = $env:ADO_FEED_NAME
@@ -65,7 +57,7 @@ steps:
             PatToken         = (ConvertTo-SecureString -String $env:ADO_PAT -AsPlainText -Force)
         }
 
-        Register-AzureDevOpsArtifactFeed @params
+        Register-AzureDevOpsArtifactFeed @artifactFeed
     env:
       ADO_ORGANIZATION: $(azureDevOpsArtifactOrganizationName)
       ADO_PROJECT: $(azureDevOpsArtifactProjectName)
@@ -79,6 +71,7 @@ steps:
       targetType: inline
       pwsh: true
       script: |
+        . "$(Build.SourcesDirectory)\src\helper-functions\AzureDevOps.ArtifactFeedManagement.ps1"
         $publishParams = @{
           Organization   = $env:ADO_ORGANIZATION
           Project        = $env:ADO_PROJECT
