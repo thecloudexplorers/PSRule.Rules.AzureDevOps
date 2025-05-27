@@ -22,6 +22,7 @@ steps:
   - task: PowerShell@2
     displayName: "Install prerequisite modules"
     inputs:
+      targetType: inline
       pwsh: true
       script: |
         Write-Host "##[group]Installing required PowerShell modules"
@@ -44,6 +45,7 @@ steps:
   - task: PowerShell@2
     displayName: "Load helper functions"
     inputs:
+      targetType: inline
       pwsh: true
       script: |
         # Dot-source so that Register-AzureDevOpsArtifactFeed and Publish-* are available
@@ -52,6 +54,7 @@ steps:
   - task: PowerShell@2
     displayName: "Initialize Azure DevOps Artifact Feed"
     inputs:
+      targetType: inline
       pwsh: true
       script: |
         $ArtifactFeed = @{
@@ -73,6 +76,7 @@ steps:
   - task: PowerShell@2
     displayName: "Publish PSModule to Azure Artifacts"
     inputs:
+      targetType: inline
       pwsh: true
       script: |
         $publishParams = @{
