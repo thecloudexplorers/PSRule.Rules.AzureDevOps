@@ -12,10 +12,10 @@ function Register-AzureDevOpsArtifactFeed {
         registers the specified Azure Artifacts feed,
         and installs any custom modules from that feed.
 
-    .PARAMETER OrganizationName
+    .PARAMETER Organization
         Azure DevOps organization name.
 
-    .PARAMETER ProjectName
+    .PARAMETER Project
         Azure DevOps project name.
 
     .PARAMETER FeedName
@@ -32,8 +32,8 @@ function Register-AzureDevOpsArtifactFeed {
 
     .EXAMPLE
         $initFeedParams = @{
-            OrganizationName = 'Contoso'
-            ProjectName      = 'WebApp'
+            Organization = 'Contoso'
+            Project      = 'WebApp'
             FeedName         = 'Modules'
             PatUser          = 'build'
             PatToken         = (ConvertTo-SecureString -String $env:ADO_PAT -AsPlainText -Force)
@@ -45,35 +45,29 @@ function Register-AzureDevOpsArtifactFeed {
 #>
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [string]
-        $OrganizationName,
-
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $ProjectName,
-
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
-        [ValidateNotNullOrEmpty()]
-        [string]
-        $FeedName,
+        [System.String] $Organization,
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [string]
-        $PatUser,
+        [System.String] $Project,
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [System.Security.SecureString]
-        $PatToken,
+        [System.String] $FeedName,
+
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [System.String] $PatUser,
+
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [System.Security.SecureString] $PatToken,
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [string[]]
-        $CustomModules = @()
+        [System.String[]] $CustomModules = @()
     )
     Begin {
         $ErrorActionPreference = 'Stop'
@@ -92,7 +86,8 @@ function Register-AzureDevOpsArtifactFeed {
         # Generate random password for vault
         $randomChars = 97..122 | Get-Random -Count 10 | ForEach-Object { [char]$_ }
         $password = -join $randomChars
-        $securePwd = ConvertTo-SecureString -String $password -AsPlainText -Force  # random vault password
+        # Random vault password
+        $securePwd = ConvertTo-SecureString -String $password -AsPlainText -Force
     }
     Process {
         Write-Host "##[section]Initializing Azure Artifacts as PowerShell Gallery."
@@ -100,7 +95,7 @@ function Register-AzureDevOpsArtifactFeed {
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
         Write-Host '##[group] Prepare variables'
-        $feedUrl = "https://pkgs.dev.azure.com/$OrganizationName/$ProjectName/_packaging/$FeedName/nuget/v3/index.json"
+        $feedUrl = "https://pkgs.dev.azure.com/$Organization/$Project/_packaging/$FeedName/nuget/v3/index.json"
         Write-Host '##[endgroup]'
 
         Write-Host '##[group] Configure SecretStore'
@@ -196,17 +191,8 @@ function Publish-AzureDevOpsArtifactPackage {
     manages credentials securely using SecretManagement and SecretStore,
     and publishes a specified PowerShell package.
 
-.PARAMETER Organization
-    The name of your Azure DevOps organization.
-
-.PARAMETER Project
-    The Azure DevOps project name.
-
 .PARAMETER FeedName
     The name of the Azure Artifacts feed.
-
-.PARAMETER RepositoryName
-    Desired name for the PowerShell repository registration.
 
 .PARAMETER Username
     Username for the Azure DevOps PAT (usually 'Azure DevOps').
@@ -224,10 +210,7 @@ function Publish-AzureDevOpsArtifactPackage {
     # Define all parameters
     $securePat = ConvertTo-SecureString -String $env:MyPatToken -AsPlainText -Force
     $publishParams = @{
-        Organization     = 'contoso'
-        Project          = 'MyProject'
         FeedName         = 'MyFeed'
-        RepositoryName   = 'MyPSRepo'
         Username         = 'Azure DevOps'
         PatToken         = $securePat
         PackagePath      = 'C:\Modules\MyModule'
@@ -239,25 +222,11 @@ function Publish-AzureDevOpsArtifactPackage {
 #>
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $Organization,
 
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $Project,
-
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [System.String]
         $FeedName,
-
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
-        [ValidateNotNullOrEmpty()]
-        [System.String]
-        $RepositoryName,
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
@@ -294,13 +263,10 @@ function Publish-AzureDevOpsArtifactPackage {
         Write-Verbose '## Enforcing TLS 1.2'
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-        Write-Host '##[group] Prepare feed URL and credentials'
-        # Build feed URL (NuGet v3 for PSResourceGet)
+        Write-Host '##[group] Publishing module' -ForegroundColor Green
 
         $credential = New-Object System.Management.Automation.PSCredential ($Username, $PatToken)
-        Write-Host '##[endgroup]'
 
-        Write-Host '##[group] Publishing module' -ForegroundColor Green
         # Publish the module using splatted parameters
         $publishParams = @{
             Path        = $PackagePath
