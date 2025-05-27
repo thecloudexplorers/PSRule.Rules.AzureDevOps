@@ -254,10 +254,18 @@ function Publish-AzureDevOpsArtifactPackage {
         # Fail fast on all errors
         $ErrorActionPreference = 'Stop'
 
-        Write-Verbose 'Loading required modules'
-        Import-Module Microsoft.PowerShell.SecretManagement -ErrorAction Stop
-        Import-Module Microsoft.PowerShell.SecretStore -ErrorAction Stop
-        Import-Module PowerShellGet -ErrorAction Stop
+        Write-Host "##[group]Importing PowerShell Modules"
+        try {
+            # Ensure required modules are loaded
+            Import-Module Microsoft.PowerShell.SecretStore -Force -ErrorAction Stop
+            Import-Module Microsoft.PowerShell.SecretManagement -Force -ErrorAction Stop
+            Import-Module Microsoft.PowerShell.PSResourceGet -Force -ErrorAction Stop
+        }
+        catch {
+            Write-Error "Failed to import modules: $_"
+            throw
+        }
+        Write-Output "##[endgroup]"
     }
     Process {
         Write-Host "##[section]Publishing PowerShell Module." -ForegroundColor Green

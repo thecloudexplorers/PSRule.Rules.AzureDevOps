@@ -38,7 +38,8 @@ steps:
                            -Scope $env:MODULE_SCOPE `
                            -Force `
                            -AllowClobber `
-                           -ErrorAction Stop
+                           -ErrorAction Stop `
+                           -Repository PSGallery
           }
         }
         Write-Host "##[endgroup]"

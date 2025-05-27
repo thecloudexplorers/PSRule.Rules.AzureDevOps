@@ -76,7 +76,7 @@ Begin {
     # Generate a random lowercase password of length 10
     # Justified: secret is only available in memory via runtime injection
     $password = -join ( (97..122) | Get-Random -Count 10 | ForEach-Object { [char]$_ } ) |
-    ConvertTo-SecureString -AsPlainText -Force
+        ConvertTo-SecureString -AsPlainText -Force
 
     Write-Host "##[group]Importing PowerShell Modules"
     try {
@@ -144,6 +144,10 @@ Process {
     Write-Host "##[endgroup]"
 
     Write-Host "##[group]Set Azure Artifacts as PowerShell Repository"
+
+    Write-Host "PSResourceRepositories"
+    Get-PSResourceRepository
+
     # Unregister existing repository if present
     if (Get-PSResourceRepository -Name $repositoryName -ErrorAction SilentlyContinue) {
         Write-Host "Removing existing PSResource repo [$repositoryName]"
