@@ -74,12 +74,9 @@ steps:
       script: |
         . "$(Build.SourcesDirectory)\src\helper-functions\AzureDevOps.ArtifactFeedManagement.ps1"
         $publishParams = @{
-          Organization   = $env:ADO_ORGANIZATION
-          Project        = $env:ADO_PROJECT
           FeedName       = $env:ADO_FEED_NAME
           Username       = $env:ADO_USERNAME
           ApiKey         = $env:ADO_API_KEY
-          RepositoryName = "PSUpstream"
           PatToken       = (ConvertTo-SecureString -String $env:ADO_PAT -AsPlainText -Force)
           PackagePath    = '$(Build.SourcesDirectory)\src\PSRule.Rules.AzureDevOps'
         }
