@@ -75,6 +75,7 @@ steps:
             FeedName         = $env:ADO_FEED_NAME
             PatUser          = $env:ADO_USERNAME
             PatToken         = (ConvertTo-SecureString -String $env:ADO_PAT -AsPlainText -Force)
+            PSRepositoryName = $env:ADO_FEED_NAME
         }
 
         Register-AzureDevOpsArtifactFeed @artifactFeed
