@@ -5,16 +5,8 @@ variables:
   - name: MODULE_SCOPE
     value: "CurrentUser"
 
-# # schedules:
-# #   - cron: "5 8 * * 0"
-# #     displayName: Run every Sunday
-# #     branches:
-# #       include:
-# #         - "*"
-
 trigger:
   - main
-  - users/wcamargo/*
 
 pool:
   vmImage: "windows-latest"
@@ -92,4 +84,4 @@ steps:
       ADO_FEED_NAME: $(azureDevOpsArtifactProjectNameFeedName)
       ADO_USERNAME: $(azureDevOpsArtifactPatUser)
       ADO_PAT: $(azureDevOpsArtifactPatToken)
-      MODULE_API_KEY: $(apiKey)
+      MODULE_API_KEY: $(psrule-rules-azuredevops-apikey)
