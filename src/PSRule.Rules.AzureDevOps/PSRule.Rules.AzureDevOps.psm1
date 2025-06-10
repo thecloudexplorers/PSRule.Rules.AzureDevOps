@@ -67,17 +67,8 @@ function Export-AzDevOpsRuleData {
         throw 'Not connected to Azure DevOps. Run Connect-AzDevOps first.'
     }
 
-    if ($Organization -ne $script:connection.Organization) {
-        Write-Warning "Provided Organization ($Organization) differs from connected organization ($($script:connection.Organization)). Using connected organization."
-    }
-
-    $Organization = $script:connection.Organization
-    $AccessToken = $script:connection.Token
-    $OrganizationId = $script:connection.OrganizationId
-
     Write-Host "Exporting rule data for project [$Project] to [$OutputPath]" -ForegroundColor Green
 
-    
     $exportCommands = @(
         @{ Name = 'Export-AzDevOpsProject'; Params = @{ Project = $Project }; Message = "[$Project] Exporting project" },
         @{ Name = 'Export-AzDevOpsReposAndBranchPolicies'; Params = @{ Project = $Project }; Message = "[$Project] Exporting repos and branch policies" },
@@ -88,11 +79,7 @@ function Export-AzDevOpsRuleData {
         @{ Name = 'Export-AzDevOpsVariableGroups'; Params = @{ Project = $Project }; Message = "[$Project] Exporting variable groups" },
         @{ Name = 'Export-AzDevOpsReleaseDefinitions'; Params = @{ Project = $Project }; Message = "[$Project] Exporting release definitions" },
         @{ Name = 'Export-AzDevOpsGroups'; Params = @{ Project = $Project }; Message = "[$Project] Exporting groups" },        
-        @{ Name = 'Export-AzDevOpsRetentionSettings'; Params = @{ Project = $Project }; Message = "[$Project] Exporting retention settings" },
-        @{ Name = 'Export-AdoOrganizationPipelinesSettings'; Params = @{ Organization = $Organization; AccessToken = $AccessToken }; Message = "[$Project] Exporting organization pipelines settings" },
-        @{ Name = 'Export-AdoOrganizationGeneralOverview'; Params = @{ Organization = $Organization; AccessToken = $AccessToken }; Message = "[$Project] Exporting organization general overview" },
-        @{ Name = 'Export-AdoOrganizationGeneralBillingSettings'; Params = @{ Organization = $Organization; OrganizationId = $OrganizationId; AccessToken = $AccessToken }; Message = "[$Project] Exporting organization billing settings" },
-        @{ Name = 'Export-AdoOrganizationSecurityPolicies'; Params = @{ Organization = $Organization; AccessToken = $AccessToken }; Message = "[$Project] Exporting organization security policies" }
+        @{ Name = 'Export-AzDevOpsRetentionSettings'; Params = @{ Project = $Project }; Message = "[$Project] Exporting retention settings" }
     )
     
     $commonParams = if ($PassThru) {
@@ -138,6 +125,110 @@ Export-ModuleMember -Function Export-AzDevOpsRuleData -Alias Export-AzDevOpsProj
 
 <#
     .SYNOPSIS
+    Export organization-level settings for Azure DevOps for analysis by PSRule
+
+    .DESCRIPTION
+    Export organization-level settings for Azure DevOps using Azure DevOps Rest API and this module's functions for analysis by PSRule
+
+    .PARAMETER Organization
+    Azure DevOps Organization Name. URL Format is not required.
+
+    .PARAMETER OrganizationId
+    Azure DevOps Organization ID, in guid format.
+
+    .PARAMETER OutputPath
+    Output path for JSON files
+
+    .PARAMETER PassThru
+    Return the exported organization settings as objects to the pipeline instead of writing to a file
+
+    .EXAMPLE
+    Export-AzDevOpsOrganizationSettings -Organization "MyOrg" -OrganizationId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" -OutputPath $OutputPath
+#>
+function Export-AzDevOpsOrganizationSettings {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [string]
+        $Organization,
+
+        [Parameter(Mandatory)]
+        [string]
+        $OrganizationId,
+
+        [Parameter(Mandatory)]
+        [string]
+        $OutputPath,
+
+        [Parameter(ParameterSetName = 'PassThru')]
+        [switch]
+        $PassThru
+    )
+
+    if ($null -eq $script:connection) {
+        throw 'Not connected to Azure DevOps. Run Connect-AzDevOps first.'
+    }
+
+    if ($Organization -ne $script:connection.Organization) {
+        Write-Warning "Provided Organization ($Organization) differs from connected organization ($($script:connection.Organization)). Using connected organization."
+    }
+
+    $Organization = $script:connection.Organization
+    $AccessToken = $script:connection.Token
+    $OrganizationId = $script:connection.OrganizationId
+
+    Write-Host "Exporting organization settings for [$Organization] to [$OutputPath]" -ForegroundColor Green
+
+    $exportCommands = @(
+        @{ Name = 'Export-AdoOrganizationPipelinesSettings'; Params = @{ Organization = $Organization; AccessToken = $AccessToken }; Message = "[$Organization] Exporting organization pipelines settings" },
+        @{ Name = 'Export-AdoOrganizationGeneralOverview'; Params = @{ Organization = $Organization; AccessToken = $AccessToken }; Message = "[$Organization] Exporting organization general overview" },
+        @{ Name = 'Export-AdoOrganizationGeneralBillingSettings'; Params = @{ Organization = $Organization; OrganizationId = $OrganizationId; AccessToken = $AccessToken }; Message = "[$Organization] Exporting organization billing settings" },
+        @{ Name = 'Export-AdoOrganizationSecurityPolicies'; Params = @{ Organization = $Organization; AccessToken = $AccessToken }; Message = "[$Organization] Exporting organization security policies" }
+    )
+
+    $commonParams = if ($PassThru) {
+        @{ PassThru = $true }
+    }
+    else {
+        @{ OutputPath = $OutputPath }
+    }
+
+    $failedExports = $null
+
+    foreach ($export in $exportCommands) {
+        Write-Host $export.Message -ForegroundColor Blue
+
+        # assemble splat from Params + commonParams
+        $splat = @{}
+        $splat += $export.Params
+        $splat += $commonParams
+
+        # attempt the export; on error, log and continue
+        try {
+            & $export.Name @splat -ErrorAction Stop
+        }
+        catch {
+            $failedExports += $export.Name
+            Write-Error "[$($export.Name)]: $($_.Exception.Message)" -ErrorAction Continue
+        }
+    }
+
+    if ($failedExports.Count) {
+        Write-Warning "The following exported commands could not be executed:"
+        foreach ($failedExport in $failedExports) {
+            Write-Warning $failedExport
+        }
+    }
+    else {
+        Write-Host "All organization settings exported successfully!" -ForegroundColor Green
+    }
+}
+
+Export-ModuleMember -Function Export-AzDevOpsOrganizationSettings
+# End of Function Export-AzDevOpsOrganizationSettings
+
+<#
+    .SYNOPSIS
     Export rule data for all projects in the DevOps organization
 
     .DESCRIPTION
@@ -166,6 +257,9 @@ Function Export-AzDevOpsOrganizationRuleData {
         [string]
         $OutputPath
     )
+    # Export organization settings to the root output path
+    Export-AzDevOpsOrganizationSettings -Organization $Organization -OrganizationId $OrganizationId -OutputPath $OutputPath
+
     $projects = Get-AzDevOpsProject
     $projects | ForEach-Object {
         $project = $_
