@@ -1,7 +1,7 @@
 name: Publish-PSRule.Rules.AzureDevOps
 
 variables:
-  - group: "azdo-psrule-run"
+  - group: devops-assessment-vg001
   - name: MODULE_SCOPE
     value: "CurrentUser"
 

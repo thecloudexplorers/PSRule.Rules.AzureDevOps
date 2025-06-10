@@ -156,3 +156,16 @@ The following table lists the token scopes that are required for each rule.
 |[Azure.DevOps.Tasks.VariableGroup.Description](../src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Tasks.VariableGroup.Description.md)|ReadOnly|
 |[Azure.DevOps.Tasks.VariableGroup.NoKeyVaultNoSecrets](../src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Tasks.VariableGroup.NoKeyVaultNoSecrets.md)|ReadOnly|
 |[Azure.DevOps.Tasks.VariableGroup.NoPlainTextSecrets](../src/PSRule.Rules.AzureDevOps/en/Azure.DevOps.Tasks.VariableGroup.NoPlainTextSecrets.md)|ReadOnly|
+
+## Service Principle Authentication
+
+Required permissions:
+
+Key Vault Reader
+Key Vault Secrets User
+
+Subscription Contributor ?
+
+### Organization Rules Scope
+
+Required: Project Collection Administrator
