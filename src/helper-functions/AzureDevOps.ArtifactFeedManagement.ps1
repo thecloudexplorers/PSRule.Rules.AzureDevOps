@@ -70,7 +70,6 @@ function Register-AzureDevOpsArtifactFeed {
         [System.String] $PSRepositoryName,
 
         [Parameter()]
-        [ValidateNotNullOrEmpty()]
         [System.String[]] $CustomModules = @()
     )
     Begin {
@@ -192,18 +191,18 @@ function Publish-AzureDevOpsArtifactPackage {
     Publishes a PowerShell package to a private Azure Artifacts feed.
 
 .DESCRIPTION
-    This function registers a PSRepository backed by an Azure Artifacts feed,
-    manages credentials securely using SecretManagement and SecretStore,
-    and publishes a specified PowerShell package.
-
-.PARAMETER FeedName
-    The name of the Azure Artifacts feed.
+    This function publishes a specified PowerShell package to an Azure Artifacts feed.
+    It can work with repositories that use SecretStore credentials or with direct credential authentication.
+    If the repository uses SecretStore, it will attempt to unlock the vault using a provided password.
 
 .PARAMETER PatUser
     PatUser for the Azure DevOps PAT (usually 'Azure DevOps').
 
 .PARAMETER PatToken
     Azure DevOps Personal Access Token as a SecureString.
+
+.PARAMETER PSRepositoryName
+    The name of the PSRepository to publish to.
 
 .PARAMETER PackagePath
     The full path to the PowerShell module/package to publish.
@@ -212,12 +211,12 @@ function Publish-AzureDevOpsArtifactPackage {
     The API key used for publishing to the Azure Artifacts feed (can be dummy if not used).
 
 .EXAMPLE
-    # Define all parameters
+    # Define all parameters for direct credential publishing
     $securePat = ConvertTo-SecureString -String $env:MyPatToken -AsPlainText -Force
     $publishParams = @{
         PatUser          = 'Azure DevOps'
         PatToken         = $securePat
-        PSRepositoryName   = 'MyRepository'
+        PSRepositoryName = 'MyRepository'
         PackagePath      = 'C:\Modules\MyModule'
         ApiKey           = 'dummy'
     }
@@ -269,6 +268,57 @@ function Publish-AzureDevOpsArtifactPackage {
 
         Write-Verbose '## Enforcing TLS 1.2'
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        $repository = Get-PSResourceRepository -Name $PSRepositoryName -ErrorAction SilentlyContinue
+        if ($repository -and $repository.CredentialInfo) {
+            Write-Verbose "Repository uses SecretStore credentials. Resetting and unlocking vault."
+
+            # Static configuration matching the Register function
+            $passwordTimeout = -1
+            $vaultName = 'SecretVault'
+            $secretName = 'MyCredential'
+
+            # Generate random password for vault (same approach as Register function)
+            $randomChars = 97..122 | Get-Random -Count 10 | ForEach-Object { [char]$_ }
+            $password = -join $randomChars
+            $securePwd = ConvertTo-SecureString -String $password -AsPlainText -Force
+
+            try {
+                # Reset the SecretStore with new random password
+                $resetParams = @{
+                    Scope           = 'CurrentUser'
+                    Authentication  = 'Password'
+                    Interaction     = 'None'
+                    Password        = $securePwd
+                    PasswordTimeout = $passwordTimeout
+                    Force           = $true
+                    ErrorAction     = 'Stop'
+                }
+                Reset-SecretStore @resetParams
+
+                # Unlock the vault with the new password
+                $unlockParams = @{
+                    Password    = $securePwd
+                    ErrorAction = 'Stop'
+                }
+                Unlock-SecretStore @unlockParams
+
+                # Re-store the credentials after vault reset
+                $credential = New-Object System.Management.Automation.PSCredential ($PatUser, $PatToken)
+                $secretParams = @{
+                    Name        = $secretName
+                    Secret      = $credential
+                    Vault       = $vaultName
+                    ErrorAction = 'Stop'
+                }
+                Set-Secret @secretParams
+
+                Write-Verbose "SecretStore vault reset, unlocked, and credentials restored successfully."
+            }
+            catch {
+                Write-Warning "Failed to reset/unlock SecretStore vault: $_"
+                Write-Verbose "Proceeding with direct credential authentication."
+            }
+        }
 
         Write-Host '##[group] Publishing module' -ForegroundColor Green
 
