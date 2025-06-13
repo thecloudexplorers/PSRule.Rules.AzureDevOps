@@ -44,14 +44,6 @@ function Export-AzDevOpsRuleData {
     param (
         [Parameter(Mandatory)]
         [string]
-        $Organization,
-
-        [Parameter(Mandatory)]
-        [string]
-        $OrganizationId,
-
-        [Parameter(Mandatory)]
-        [string]
         $Project,
 
         [Parameter(Mandatory)]
