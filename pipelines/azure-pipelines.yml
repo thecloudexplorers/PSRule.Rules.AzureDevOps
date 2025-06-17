@@ -1,67 +1,87 @@
-name: PSRule-ADO
-
-pool:
-  vmImage: 'ubuntu-latest'
+name: Publish-PSRule.Rules.AzureDevOps
 
 variables:
-  # Set to your variable group containing ADO_PAT
-  - group: 'azdo-psrule-run'
-  # Set to your Azure DevOps organization
-  - name: devops_organization
-    value: 'tcsnlps'
-  # Set to your Azure DevOps project
-  - name: devops_project
-    value: 'ssc-set'
+  - group: devops-assessment-vg001
+  - name: MODULE_SCOPE
+    value: "CurrentUser"
 
-schedules:
-- cron: "5 8 * * 0"
-  displayName: Run every Sunday
-  branches:
-    include:
-    - '*'
+trigger:
+  - main
 
-stages:
-  - stage: Run
-    displayName: Run
-    jobs:
-      - job: Run
-        displayName: Run
-        steps:
-          - checkout: self
-            clean: true
-          - task: PowerShell@2
-            displayName: Install PSRule
-            inputs:
-              targetType: 'inline'
-              script: |
-                Install-Module -Name PSRule -Scope CurrentUser -Force
-                Install-Module -Name PSRule.Rules.AzureDevOps -Scope CurrentUser -Force
-          - task: PowerShell@2
-            displayName: Create temporary output directory
-            inputs:
-              targetType: 'inline'
-              script: |
-                New-Item -Path $(Build.SourcesDirectory) -Name Temp -ItemType Directory -Force
-          - task: PowerShell@2
-            displayName: Run PSRule
-            inputs:
-              targetType: 'inline'
-              script: |
-                Connect-AzDevOps -Organization $(AZDO-ORGANIZATION) -PAT "$(AZDO-PAT)"
-                Export-AzDevOpsRuleData `
-                  -Project $(devops_project) `
-                  -OutputPath .\Temp
-                Assert-PSRule -Style AzurePipelines `
-                  -Module PSRule.Rules.AzureDevOps `
-                  -InputPath '$(Build.SourcesDirectory)/Temp/' `
-                  -Format Detect `
-                  -OutputPath ./results.sarif `
-                  -OutputFormat Sarif `
-                  -Culture en
+pool:
+  vmImage: "windows-latest"
 
-          - task: PublishPipelineArtifact@1
-            condition: always()
-            displayName: Publish results
-            inputs:
-              targetPath: ./results.sarif
-              artifact: 'CodeAnalysisLogs'
+steps:
+  - task: PowerShell@2
+    displayName: "Install prerequisite modules"
+    inputs:
+      targetType: inline
+      pwsh: true
+      script: |
+        Write-Host "##[group]Installing required PowerShell modules"
+        $modules = @(
+          'Microsoft.PowerShell.SecretManagement'
+          'Microsoft.PowerShell.SecretStore'
+          'Microsoft.PowerShell.PSResourceGet'
+        )
+        foreach ($mod in $modules) {
+          if (-not (Get-Module -ListAvailable -Name $mod)) {
+            Install-Module -Name $mod `
+                           -Scope $env:MODULE_SCOPE `
+                           -Force `
+                           -AllowClobber `
+                           -ErrorAction Stop `
+                           -Repository PSGallery
+          }
+        }
+        Write-Host "##[endgroup]"
+
+  - task: PowerShell@2
+    displayName: "Register Azure Artifacts Feed"
+    inputs:
+      targetType: inline
+      pwsh: true
+      script: |
+        . "$(Build.SourcesDirectory)\src\helper-functions\AzureDevOps.ArtifactFeedManagement.ps1"
+
+        $artifactFeed = @{
+            Organization = $env:ADO_ORGANIZATION
+            Project      = $env:ADO_PROJECT
+            FeedName         = $env:ADO_FEED_NAME
+            PatUser          = $env:ADO_USERNAME
+            PatToken         = (ConvertTo-SecureString -String $env:ADO_PAT -AsPlainText -Force)
+            PSRepositoryName = $env:ADO_FEED_NAME
+        }
+
+        Register-AzureDevOpsArtifactFeed @artifactFeed
+    env:
+      ADO_ORGANIZATION: $(azureDevOpsArtifactOrganizationName)
+      ADO_PROJECT: $(azureDevOpsArtifactProjectName)
+      ADO_FEED_NAME: $(azureDevOpsArtifactProjectNameFeedName)
+      ADO_USERNAME: $(azureDevOpsArtifactPatUser)
+      ADO_PAT: $(azureDevOpsArtifactPatToken)
+
+  - task: PowerShell@2
+    displayName: "Publish PSModule to Azure Artifacts"
+    inputs:
+      targetType: inline
+      pwsh: true
+      script: |
+        . "$(Build.SourcesDirectory)\src\helper-functions\AzureDevOps.ArtifactFeedManagement.ps1"
+
+        $publishParams = @{
+          PatUser           = $env:ADO_USERNAME
+          PatToken          = (ConvertTo-SecureString -String $env:ADO_PAT -AsPlainText -Force)
+          PSRepositoryName  = $env:ADO_FEED_NAME
+          ApiKey            = $env:MODULE_API_KEY
+          PackagePath       = '$(Build.SourcesDirectory)\src\PSRule.Rules.AzureDevOps'
+        }
+
+        Publish-AzureDevOpsArtifactPackage @publishParams
+    env:
+      ADO_ORGANIZATION: $(azureDevOpsArtifactOrganizationName)
+      ADO_PROJECT: $(azureDevOpsArtifactProjectName)
+      ADO_FEED_NAME: $(azureDevOpsArtifactProjectNameFeedName)
+      ADO_USERNAME: $(azureDevOpsArtifactPatUser)
+      ADO_PAT: $(azureDevOpsArtifactPatToken)
+      MODULE_API_KEY: $(psrule-rules-azuredevops-apikey)
