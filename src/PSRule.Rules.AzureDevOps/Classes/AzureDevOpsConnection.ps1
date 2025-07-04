@@ -87,7 +87,27 @@ class AzureDevOpsConnection {
         $this.GetPATToken()
     }
 
-    # Constructor for Bearer Token
+    # Constructor for Bearer Token (simple)
+    AzureDevOpsConnection(
+        [string]$Organization,
+        [string]$AccessToken,
+        [string]$TokenType = 'FullAccess',
+        [switch]$Bearer
+    )
+    {
+        $this.Organization = $Organization
+        $this.Token = "Bearer $AccessToken"
+        $this.TokenExpires = [System.DateTime]::Now.AddHours(1) # Default 1-hour expiry
+        $this.TokenType = $TokenType
+        $this.AuthType = 'Bearer'
+
+        # Validate token format
+        if (-not $AccessToken -or $AccessToken -notmatch "^[A-Za-z0-9._-]+\.[A-Za-z0-9._-]+\.[A-Za-z0-9._-]+$") {
+            throw "Invalid Bearer token format. Ensure the token is a valid JWT."
+        }
+    }
+
+    # Constructor for Bearer Token (with OrganizationId)
     AzureDevOpsConnection(
         [string]$Organization,
         [string]$OrganizationId,
