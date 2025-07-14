@@ -5,7 +5,14 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "PowerShell Launch Script",
+      "name": "PowerShell Launch Current File",
+      "type": "PowerShell",
+      "request": "launch",
+      "script": "${file}",
+      "cwd": "${cwd}"
+    },
+    {
+      "name": "PowerShell Publish Main",
       "type": "PowerShell",
       "request": "launch",
       "script": "${workspaceFolder}/src/helper-functions/Publish-Main.ps1",
@@ -13,7 +20,7 @@
       "args": ["-RootDirectory", "${workspaceFolder}"]
     },
     {
-      "name": "PowerShell: Run Pester Tests",
+      "name": "PowerShell: Run Local",
       "type": "PowerShell",
       "request": "launch",
       "script": "${workspaceFolder}/.vscode/run-tests.ps1",

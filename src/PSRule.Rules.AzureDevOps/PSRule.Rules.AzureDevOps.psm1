@@ -83,6 +83,7 @@ function Export-AzDevOpsRuleData {
         @{ Name = 'Export-AzDevOpsReposAndBranchPolicies'; Params = @{ Project = $Project }; Message = "[$Project] Exporting repos and branch policies" },
         @{ Name = 'Export-AzDevOpsEnvironmentChecks'; Params = @{ Project = $Project }; Message = "[$Project] Exporting environment checks" },
         @{ Name = 'Export-AzDevOpsServiceConnections'; Params = @{ Project = $Project }; Message = "[$Project] Exporting service connections" },
+        @{ Name = 'Export-AzDevOpsServiceConnectionExecutionHistory'; Params = @{ Project = $Project }; Message = "[$Project] Exporting service connections Execution History" },
         @{ Name = 'Export-AzDevOpsPipelines'; Params = @{ Project = $Project }; Message = "[$Project] Exporting pipelines" },
         @{ Name = 'Export-AzDevOpsPipelinesSettings'; Params = @{ Project = $Project }; Message = "[$Project] Exporting pipelines settings" },
         @{ Name = 'Export-AzDevOpsVariableGroups'; Params = @{ Project = $Project }; Message = "[$Project] Exporting variable groups" },

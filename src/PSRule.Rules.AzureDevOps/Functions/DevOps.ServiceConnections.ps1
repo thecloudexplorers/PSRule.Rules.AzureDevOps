@@ -184,7 +184,7 @@ function Export-AzDevOpsServiceConnections {
         $serviceConnection | Add-Member -MemberType NoteProperty -Name ObjectType -Value 'Azure.DevOps.ServiceConnection'
         # Set JSON ObjectName field to organiztion.project.service connection name
         $serviceConnection | Add-Member -MemberType NoteProperty -Name ObjectName -Value "$Organization.$Project.$($serviceConnection.name)"
-        
+
         # Get checks for service connection
         $serviceConnectionChecks = @(Get-AzDevOpsServiceConnectionChecks -Project $Project -ServiceConnectionId $serviceConnection.id)
         $serviceConnection | Add-Member -MemberType NoteProperty -Name Checks -Value $serviceConnectionChecks
@@ -209,3 +209,211 @@ function Export-AzDevOpsServiceConnections {
 }
 Export-ModuleMember -Function Export-AzDevOpsServiceConnections
 # End of Function Export-AzDevOpsServiceConnections
+
+<#
+    .SYNOPSIS
+    Get the execution history for a service connection from Azure DevOps project
+
+    .DESCRIPTION
+    Get the execution history for a service connection from Azure DevOps project using Azure DevOps Rest API.
+    This provides details about when and how the service connection was used in pipelines.
+
+    .PARAMETER Project
+    Project name for Azure DevOps
+
+    .PARAMETER ServiceConnectionId
+    Service connection id for Azure DevOps
+
+    .PARAMETER Top
+    Number of execution records to retrieve. Default is 100.
+
+    .PARAMETER ContinuationToken
+    A continuation token, returned by a previous call to this method, that can be used to return the next set of records
+
+    .EXAMPLE
+    Get-AzDevOpsServiceConnectionExecutionHistory -Project $Project -ServiceConnectionId $ServiceConnectionId
+
+    .EXAMPLE
+    Get-AzDevOpsServiceConnectionExecutionHistory -Project $Project -ServiceConnectionId $ServiceConnectionId -Top 10
+
+    .EXAMPLE
+    Get-AzDevOpsServiceConnectionExecutionHistory -Project $Project -ServiceConnectionId $ServiceConnectionId -ContinuationToken $ContinuationToken
+
+    .LINK
+    https://learn.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/executionhistory/list?view=azure-devops-rest-7.1&tabs=HTTP
+#>
+function Get-AzDevOpsServiceConnectionExecutionHistory {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [string]
+        $Project,
+
+        [Parameter(Mandatory)]
+        [string]
+        $ServiceConnectionId,
+
+        [Parameter()]
+        [int]
+        $Top = 100,
+
+        [Parameter()]
+        [int64]
+        $ContinuationToken
+    )
+    if ($null -eq $script:connection) {
+        throw "Not connected to Azure DevOps. Run Connect-AzDevOps first"
+    }
+
+    $Organization = $script:connection.Organization
+    $header = $script:connection.GetHeader()
+
+    # Construct the base URI
+    $uri = "https://dev.azure.com/$Organization/$Project/_apis/serviceendpoint/$ServiceConnectionId/executionhistory?api-version=7.1"
+
+
+    # Add optional parameters if provided
+    if ($Top -gt 0) {
+        $uri += "&top=$Top"
+    }
+
+    if ($ContinuationToken) {
+        $uri += "&continuationToken=$ContinuationToken"
+    }
+
+    Write-Verbose "URI: $uri"
+
+    try {
+        $response = Invoke-RestMethod -Uri $uri -Method Get -Headers $header
+        # If the response is not an object but a string, the authentication failed
+        if ($response -is [string]) {
+            throw "Authentication failed or project not found"
+        }
+    }
+    catch {
+        throw $_.Exception.Message
+    }
+
+    return $response.value
+}
+Export-ModuleMember -Function Get-AzDevOpsServiceConnectionExecutionHistory
+# End of Function Get-AzDevOpsServiceConnectionExecutionHistory
+
+<#
+    .SYNOPSIS
+    Export service connection execution history from Azure DevOps project
+
+    .DESCRIPTION
+    Export service connection execution history from Azure DevOps project using Azure DevOps Rest API
+
+    .PARAMETER Project
+    Project name for Azure DevOps
+
+    .PARAMETER ServiceConnectionId
+    Optional. Service connection id for Azure DevOps. If not provided, will get history for all service connections.
+
+    .PARAMETER OutputPath
+    Output path for JSON files
+
+    .PARAMETER PassThru
+    Return the exported execution history as objects to the pipeline instead of writing to a file
+
+    .EXAMPLE
+    Export-AzDevOpsServiceConnectionExecutionHistory -Project $Project -OutputPath $OutputPath
+
+    .LINK
+    https://learn.microsoft.com/en-us/rest/api/azure/devops/serviceendpoint/executionhistory/list?view=azure-devops-rest-7.1&tabs=HTTP
+#>
+function Export-AzDevOpsServiceConnectionExecutionHistory {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [string]
+        $Project,
+
+        [Parameter()]
+        [string]
+        $ServiceConnectionId,
+
+        [Parameter(ParameterSetName = 'JsonFile')]
+        [string]
+        $OutputPath,
+
+        [Parameter(ParameterSetName = 'PassThru')]
+        [switch]
+        $PassThru
+    )
+    if ($null -eq $script:connection) {
+        throw "Not connected to Azure DevOps. Run Connect-AzDevOps first"
+    }
+
+    $Organization = $script:connection.Organization
+
+    # If no specific ServiceConnectionId is provided, get all service connections
+    if ([string]::IsNullOrEmpty($ServiceConnectionId)) {
+        $serviceConnections = Get-AzDevOpsServiceConnections -Project $Project
+
+        # Create an array to hold all execution histories
+        $allExecutionHistories = @()
+
+        # Get execution history for each service connection
+        foreach ($connection in $serviceConnections) {
+            $executionHistory = Get-AzDevOpsServiceConnectionExecutionHistory -Project $Project -ServiceConnectionId $connection.id
+
+            if ($executionHistory.Count -gt 0) {
+                # Add metadata to each execution history item
+                foreach ($historyItem in $executionHistory) {
+                    $historyItem | Add-Member -MemberType NoteProperty -Name "ServiceConnectionName" -Value $connection.name
+                    $historyItem | Add-Member -MemberType NoteProperty -Name "ObjectType" -Value "Azure.DevOps.ServiceConnectionExecution"
+                    $historyItem | Add-Member -MemberType NoteProperty -Name "ObjectName" -Value "$Organization.$Project.$($connection.name).Execution.$($historyItem.data.id)"
+                }
+
+                $allExecutionHistories += $executionHistory
+            }
+        }
+
+        # Return or export the execution histories
+        if ($PassThru) {
+            return $allExecutionHistories
+        } else {
+            if ($allExecutionHistories.Count -gt 0) {
+                $outputFileName = "ServiceConnectionExecutionHistory.ado.json"
+                Write-Verbose "Exporting service connection execution history to $OutputPath/$outputFileName"
+                $allExecutionHistories | ConvertTo-Json -Depth 100 | Out-File "$OutputPath/$outputFileName"
+            } else {
+                Write-Verbose "No service connection execution history found"
+            }
+        }
+    } else {
+        # Get execution history for a specific service connection
+        $serviceConnection = Get-AzDevOpsServiceConnections -Project $Project | Where-Object { $_.id -eq $ServiceConnectionId }
+        if ($null -eq $serviceConnection) {
+            Write-Warning "Service connection with ID $ServiceConnectionId not found"
+            return
+        }
+
+        $executionHistory = Get-AzDevOpsServiceConnectionExecutionHistory -Project $Project -ServiceConnectionId $ServiceConnectionId
+
+        if ($executionHistory.Count -gt 0) {
+            # Add metadata to each execution history item
+            foreach ($historyItem in $executionHistory) {
+                $historyItem | Add-Member -MemberType NoteProperty -Name "ServiceConnectionName" -Value $serviceConnection.name
+                $historyItem | Add-Member -MemberType NoteProperty -Name "ObjectType" -Value "Azure.DevOps.ServiceConnectionExecution"
+                $historyItem | Add-Member -MemberType NoteProperty -Name "ObjectName" -Value "$Organization.$Project.$($serviceConnection.name).Execution.$($historyItem.data.id)"
+            }
+
+            # Return or export the execution history
+            if ($PassThru) {
+                return $executionHistory
+            } else {
+                $outputFileName = "$($serviceConnection.name.replace('/',''))_ExecutionHistory.ado.json"
+                Write-Verbose "Exporting service connection execution history to $OutputPath/$outputFileName"
+                $executionHistory | ConvertTo-Json -Depth 100 | Out-File "$OutputPath/$outputFileName"
+            }
+        } else {
+            Write-Verbose "No execution history found for service connection $($serviceConnection.name)"
+        }
+    }
+}
+Export-ModuleMember -Function Export-AzDevOpsServiceConnectionExecutionHistory
+# End of Function Export-AzDevOpsServiceConnectionExecutionHistory
