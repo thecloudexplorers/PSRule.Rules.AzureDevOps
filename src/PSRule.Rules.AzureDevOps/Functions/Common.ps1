@@ -57,7 +57,7 @@
         [string]
         $Organization,
 
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Bearer')]
         [string]
         $OrganizationId,
 
@@ -97,7 +97,11 @@
             $script:connection = [AzureDevOpsConnection]::new($Organization)
         }
         'Bearer' {
-            $script:connection = [AzureDevOpsConnection]::new($Organization, $OrganizationId, $AccessToken, 'FullAccess', $true)
+            if ($OrganizationId) {
+                $script:connection = [AzureDevOpsConnection]::new($Organization, $OrganizationId, $AccessToken, 'FullAccess', $true)
+            } else {
+                $script:connection = [AzureDevOpsConnection]::new($Organization, $AccessToken, 'FullAccess', $true)
+            }
         }
     }
 
